@@ -1,7 +1,8 @@
 import xml.etree.ElementTree as ET
 import os
 import time
-
+import glob
+import re
 
 def getAuthors():
     tree = ET.parse('data/hc_authors.xml')
@@ -17,10 +18,30 @@ def getAuthors():
     authorList = authors.keys()
     authorList.sort()
 
-    for author in authorList[:100]:
+    for author in authorList[100:1000]:
         print '--', author
         uri = "http://api.harpercollins.com/api/v3/hcapim?apiname=catalog&format=XML&authorglobalid="+str(author)+"&apikey=6wbqgghpzmxhmtf5dmykv2bj" 
    
         os.system('curl "' + uri + '" > data/products/' + str(author) + '.xml')
        
+def getBooks():
+    files = glob.glob("data/authors/*.xml")
+    for f in files:
+        books = []
+        author = f[13:-4]
+        tree = ET.parse(f)
+        root = tree.getroot()
 
+        for el in root.iter('ISBN'):
+            books.append(el.text)
+        books = list(set(books))
+
+        for isbn in books:
+            uri = "http://api.harpercollins.com/api/v3/hcapim?apiname=ProductInfo&format=XML&isbn="+ str(isbn) + "&apikey=6wbqgghpzmxhmtf5dmykv2bj"
+
+            os.system('curl "' + uri + '" > data/books/' + str(author) + '-' + str(isbn) + '.xml')
+            time.sleep(0.1)
+
+
+#getAuthors()
+getBooks()
