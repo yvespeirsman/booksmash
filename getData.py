@@ -4,6 +4,8 @@ import time
 import glob
 import re
 import HTMLParser
+import nltk
+from nltk.tokenize import sent_tokenize, word_tokenize
 
 def getAuthors():
     tree = ET.parse('data/hc_authors.xml')
@@ -56,9 +58,16 @@ def getContent():
                 t = el.find('Content_Type_ID').text
                 #if t == "609": # 605 is summary
                 text = el.find('Content_Area1').text
-                text = re.sub('<.*?>','',text)
-                print "-------------"
-                print parser.unescape(text)
+                if text:
+                    text = re.sub('<.*?>','',text)
+                    text = parser.unescape(text)
+                    print text
+                    sentences = sent_tokenize(text)
+                    for sent in sentences:
+                        tokens = word_tokenize(sent)
+                        print sent
+                        print tokens
+
 
 #getAuthors()
 #getBooks()
