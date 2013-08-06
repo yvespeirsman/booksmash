@@ -3,6 +3,7 @@ import os
 import time
 import glob
 import re
+import HTMLParser
 
 def getAuthors():
     tree = ET.parse('data/hc_authors.xml')
@@ -42,6 +43,23 @@ def getBooks():
             os.system('curl "' + uri + '" > data/books/' + str(author) + '-' + str(isbn) + '.xml')
             time.sleep(0.1)
 
+parser = HTMLParser.HTMLParser()
+
+def getContent():
+    files = glob.glob("data/books/*.xml")
+    for f in files:
+        tree = ET.parse(f)
+        root = tree.getroot()
+        if root.find('Imprint') != "Rayo":
+
+            for el in root.iter("Product_Content"):
+                t = el.find('Content_Type_ID').text
+                #if t == "609": # 605 is summary
+                text = el.find('Content_Area1').text
+                text = re.sub('<.*?>','',text)
+                print "-------------"
+                print parser.unescape(text)
 
 #getAuthors()
-getBooks()
+#getBooks()
+getContent()
