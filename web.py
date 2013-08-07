@@ -3,6 +3,25 @@
 from bottle import run, route, template, request, post, static_file, debug
 import os
 import twitter
+from nltk.tokenize import word_tokenize
+from nltk.stem.porter import PorterStemmer
+
+stemmer = PorterStemmer()
+
+def tokenize(statuses):
+  tokens = []
+  for status in statuses:
+    tokstatus = word_tokenize(status.text)
+    for token in tokstatus:
+      tokens.append(token)
+  return tokens
+
+def stemList(tokens):
+  stems = []
+  for token in tokens:
+    stem = stemmer.stem(token.lower())
+    stems.append(stem)
+  return stems
 
 @post('/search')
 def displayResults():
@@ -14,7 +33,10 @@ def displayResults():
   print username
   statuses = api.GetUserTimeline(screen_name=username)
   print [s.text for s in statuses]
+  tokens = tokenize(statuses)
+  stems = stemList(tokens)
   print statuses[0].text
+  print stems
   t = template('templates/results.tpl',q=username,r=statuses)
   return t
 

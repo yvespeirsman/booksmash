@@ -7,6 +7,10 @@ import HTMLParser
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem.porter import PorterStemmer
+from gensim import corpora, models, similarities
+import logging
+
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 
 def getAuthors():
     tree = ET.parse('data/hc_authors.xml')
@@ -55,8 +59,14 @@ stemmer = PorterStemmer()
 
 def getContent():
     files = glob.glob("data/books/*.xml")
+    documents = []
     for f in files:
-        tree = ET.parse(f)
+        print f
+        document = []
+        try:
+            tree = ET.parse(f)
+        except:
+            break
         root = tree.getroot()
         if root.find('Imprint') != "Rayo":
 
@@ -67,17 +77,46 @@ def getContent():
                 if text:
                     text = re.sub('<.*?>','',text)
                     text = parser.unescape(text)
-                    print text
+                    #print text
                     sentences = sent_tokenize(text)
                     for sent in sentences:
                         tokens = word_tokenize(sent)
-                        print sent
-                        print tokens
+                        #print sent
+                        #print tokens
                         for token in tokens:
                             stem = stemmer.stem(token.lower())
-                            print token, "-->", stem
+                            #print token, "-->", stem
+                            document.append(stem)
+        documents.append(document)
+    return documents
 
+def model(texts):
+    dictionary = corpora.Dictionary(texts)
+    corpus = [dictionary.doc2bow(text) for text in texts]
+
+    tfidf = models.TfidfModel(corpus)
+    corpus_tfidf = tfidf[corpus]
+
+    print "----------------------------"
+    print "LSA"
+    print "----------------------------"
+
+    lsi = models.LsiModel(corpus_tfidf, id2word=dictionary,num_topics=100)
+    corpus_lsi = lsi[corpus_tfidf]
+    lsi.print_topics(100)
+
+    print "----------------------------"
+    print "LDA"
+    print "----------------------------"
+
+    lda = models.ldamodel.LdaModel(corpus_tfidf, id2word=dictionary, num_topics=100)
+    corpus_lda = lda[corpus_tfidf]
+    lda.print_topics(100)
 
 #getAuthors()
 #getBooks()
-getContent()
+documents = getContent()
+model(documents)
+
+# todo: remove stopwords
+
