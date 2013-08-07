@@ -90,7 +90,26 @@ def getContent():
         documents.append(document)
     return documents
 
+def filter(texts):
+    i = open("english-stop-words.txt")
+    stoplist = {}
+    for line in i:
+        stoplist[line.strip()] = 1
+    i.close()
+
+    textsNoStop = []
+    for text in texts:
+        textNoStop = []
+        for word in text:
+            if not word in stoplist and len(word) > 2:
+                textNoStop.append(word)
+        textsNoStop.append(textNoStop)
+    return textsNoStop
+
 def model(texts):
+
+    texts = filter(texts)
+
     dictionary = corpora.Dictionary(texts)
     corpus = [dictionary.doc2bow(text) for text in texts]
 
