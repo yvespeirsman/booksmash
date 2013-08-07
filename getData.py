@@ -6,6 +6,7 @@ import re
 import HTMLParser
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.stem.porter import PorterStemmer
 
 def getAuthors():
     tree = ET.parse('data/hc_authors.xml')
@@ -50,6 +51,7 @@ def getBooks():
                 print "already exists"
 
 parser = HTMLParser.HTMLParser()
+stemmer = PorterStemmer()
 
 def getContent():
     files = glob.glob("data/books/*.xml")
@@ -71,8 +73,11 @@ def getContent():
                         tokens = word_tokenize(sent)
                         print sent
                         print tokens
+                        for token in tokens:
+                            stem = stemmer.stem(token.lower())
+                            print token, "-->", stem
 
 
 #getAuthors()
-getBooks()
-#getContent()
+#getBooks()
+getContent()
