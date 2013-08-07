@@ -40,10 +40,14 @@ def getBooks():
         books = list(set(books))
 
         for isbn in books:
-            uri = "http://api.harpercollins.com/api/v3/hcapim?apiname=ProductInfo&format=XML&isbn="+ str(isbn) + "&apikey=6wbqgghpzmxhmtf5dmykv2bj"
+            oFile = "data/books/" + str(author) +"-"+ str(isbn) + ".xml"
+            print isbn, oFile
+            if not os.path.isfile(oFile):
+                uri = "http://api.harpercollins.com/api/v3/hcapim?apiname=ProductInfo&format=XML&isbn="+ str(isbn) + "&apikey=6wbqgghpzmxhmtf5dmykv2bj"
 
-            os.system('curl "' + uri + '" > data/books/' + str(author) + '-' + str(isbn) + '.xml')
-            time.sleep(0.1)
+                os.system('curl "' + uri + '" > ' + oFile)
+            else:
+                print "already exists"
 
 parser = HTMLParser.HTMLParser()
 
@@ -70,5 +74,5 @@ def getContent():
 
 
 #getAuthors()
-#getBooks()
-getContent()
+getBooks()
+#getContent()
