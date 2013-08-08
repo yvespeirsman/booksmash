@@ -27,12 +27,14 @@ def getAuthors():
     authorList = authors.keys()
     authorList.sort()
 
-    for author in authorList[100:1000]:
+    for author in authorList[1000:2000]:
         print '--', author
         uri = "http://api.harpercollins.com/api/v3/hcapim?apiname=catalog&format=XML&authorglobalid="+str(author)+"&apikey=6wbqgghpzmxhmtf5dmykv2bj" 
    
-        os.system('curl "' + uri + '" > data/products/' + str(author) + '.xml')
-       
+        os.system('curl "' + uri + '" > data/authors/' + str(author) + '.xml')
+
+#getAuthors() 
+      
 def stemList(tokens):
     stems = []
     for token in tokens:
@@ -43,6 +45,7 @@ def stemList(tokens):
 
 def getBooks():
     files = glob.glob("data/authors/*.xml")
+   
     for f in files:
         books = []
         author = f[13:-4]
@@ -69,40 +72,46 @@ stemmer = PorterStemmer()
 def getContent():
     files = glob.glob("data/books/*.xml")
     documents = {}
+    teller = 0
+    titlesDone = {}
     for f in files:
-        print f
+        teller = teller + 1
+        print f,teller
+        
         document = []
         try:
             tree = ET.parse(f)
         except:
-            break
+            continue
         root = tree.getroot()
+        if root.find("Product_Detail") is not None:
 
-        title = root.find("Product_Detail").find("Title").text
-        isbn = root.find("Product_Detail").find("ISBN").text
-        if root.find('Imprint') != "Rayo":
-
-            for el in root.iter("Product_Content"):
-                t = el.find('Content_Type_ID').text
-                #if t == "609": # 605 is summary
-                text = el.find('Content_Area1').text
-                if text:
-                    text = re.sub('<.*?>','',text)
-                    text = parser.unescape(text)
-                    #print text
-                    sentences = sent_tokenize(text)
-                    for sent in sentences:
-                        tokens = word_tokenize(sent)
-                        #print sent
-                        #print tokens
-                        for token in tokens:
-                            stem = stemmer.stem(token.lower())
-                            #print token, "-->", stem
-                            document.append(stem)
-        documents[f] = {}
-        documents[f]["title"] = title
-        documents[f]["isbn"] = isbn
-        documents[f]["fulltext"] = document
+            title = root.find("Product_Detail").find("Title").text
+            title = re.sub("\s[A-Z]+\s?$","",title)
+            isbn = root.find("Product_Detail").find("ISBN").text
+            if root.find('Imprint') != "Rayo" and not titlesDone.has_key(title):
+                titlesDone[title] = 1
+                for el in root.iter("Product_Content"):
+                    t = el.find('Content_Type_ID').text
+                    #if t == "609": # 605 is summary
+                    text = el.find('Content_Area1').text
+                    if text:
+                        text = re.sub('<.*?>','',text)
+                        text = parser.unescape(text)
+                        #print text
+                        sentences = sent_tokenize(text)
+                        for sent in sentences:
+                            tokens = word_tokenize(sent)
+                            #print sent
+                            #print tokens
+                            for token in tokens:
+                                stem = stemmer.stem(token.lower())
+                                #print token, "-->", stem
+                                document.append(stem)
+            documents[f] = {}
+            documents[f]["title"] = title
+            documents[f]["isbn"] = isbn
+            documents[f]["fulltext"] = document
     return documents
 
 i = open("english-stop-words.txt")
@@ -120,7 +129,7 @@ def filter(documents):
         documents[f]["fulltext-no-stop"] = textNoStop
     return documents
 
-def model(documents):
+def model(documents, query_stems):
 
     documents = filter(documents)
     texts = []
@@ -155,28 +164,29 @@ def model(documents):
     lda.print_topics(100)
 
     index = similarities.MatrixSimilarity(lsi[corpus])
-    #index.save('test.index')
+    index.save('test.index')
     #index = similarities.MatrixSimilarity.load('test.index')
 
     #query = "trade economy finance currency money international market".split()
     #query = "cancer illness hospital ill critical drugs medecine".split()
-    query = "police crime detective steal investigate criminal arrest judge".split()
-    query_stems = stemList(query)
-    print query_stems
+    #query = "police crime detective steal investigate criminal arrest judge".split()
+    #query_stems = stemList(query)
+    #print query_stems
     query_bow = dictionary.doc2bow(query_stems)
     print query_bow
     query_vec = lsi[query_bow]
     print query_vec
     sims = index[query_vec]
     sims = sorted(enumerate(sims), key=lambda item: -item[1])
-    for (book, sim) in sims:
+    for (book, sim) in sims[:100]:
         f = idMap[book]
         print sim, documents[f]["title"]
 
 #getAuthors()
 #getBooks()
-documents = getContent()
-model(documents)
+#documents = getContent()
+#model(documents, query)
+
 
 # todo: remove stopwords
 

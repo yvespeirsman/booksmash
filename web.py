@@ -5,6 +5,7 @@ import os
 import twitter
 from nltk.tokenize import word_tokenize
 from nltk.stem.porter import PorterStemmer
+import getData
 
 stemmer = PorterStemmer()
 
@@ -37,6 +38,10 @@ def displayResults():
   stems = stemList(tokens)
   print statuses[0].text
   print stems
+  
+  docs = getData.getContent()
+  getData.model(docs, stems)
+
   t = template('templates/results.tpl',q=username,r=statuses)
   return t
 
