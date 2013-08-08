@@ -39,7 +39,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" href="http://localhost:8080">Staatsblad Search</a>
+          <a class="brand" href="http://localhost:8080">Stemming</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li><a href="http://twitter.github.io/bootstrap/examples/starter-template.html#about">About</a></li>

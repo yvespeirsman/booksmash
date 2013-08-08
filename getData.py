@@ -11,6 +11,7 @@ from gensim import corpora, models, similarities
 import logging
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+stemmer = PorterStemmer()
 
 def getAuthors():
     tree = ET.parse('data/hc_authors.xml')
@@ -32,6 +33,14 @@ def getAuthors():
    
         os.system('curl "' + uri + '" > data/products/' + str(author) + '.xml')
        
+def stemList(tokens):
+    stems = []
+    for token in tokens:
+        stem = stemmer.stem(token.lower())
+        stems.append(stem)
+    return stems
+
+
 def getBooks():
     files = glob.glob("data/authors/*.xml")
     for f in files:
@@ -59,7 +68,7 @@ stemmer = PorterStemmer()
 
 def getContent():
     files = glob.glob("data/books/*.xml")
-    documents = []
+    documents = {}
     for f in files:
         print f
         document = []
@@ -68,6 +77,9 @@ def getContent():
         except:
             break
         root = tree.getroot()
+
+        title = root.find("Product_Detail").find("Title").text
+        isbn = root.find("Product_Detail").find("ISBN").text
         if root.find('Imprint') != "Rayo":
 
             for el in root.iter("Product_Content"):
@@ -87,28 +99,38 @@ def getContent():
                             stem = stemmer.stem(token.lower())
                             #print token, "-->", stem
                             document.append(stem)
-        documents.append(document)
+        documents[f] = {}
+        documents[f]["title"] = title
+        documents[f]["isbn"] = isbn
+        documents[f]["fulltext"] = document
     return documents
 
-def filter(texts):
-    i = open("english-stop-words.txt")
-    stoplist = {}
-    for line in i:
-        stoplist[line.strip()] = 1
-    i.close()
+i = open("english-stop-words.txt")
+stoplist = {}
+for line in i:
+    stoplist[line.strip()] = 1
+i.close()
 
-    textsNoStop = []
-    for text in texts:
+def filter(documents):
+    for f in documents:
         textNoStop = []
-        for word in text:
+        for word in documents[f]["fulltext"]:
             if not word in stoplist and len(word) > 2:
                 textNoStop.append(word)
-        textsNoStop.append(textNoStop)
-    return textsNoStop
+        documents[f]["fulltext-no-stop"] = textNoStop
+    return documents
 
-def model(texts):
+def model(documents):
 
-    texts = filter(texts)
+    documents = filter(documents)
+    texts = []
+    idMap = {}
+    
+    t = 0
+    for f in documents:
+        texts.append(documents[f]["fulltext-no-stop"])
+        idMap[t] = f
+        t += 1
 
     dictionary = corpora.Dictionary(texts)
     corpus = [dictionary.doc2bow(text) for text in texts]
@@ -131,6 +153,25 @@ def model(texts):
     lda = models.ldamodel.LdaModel(corpus_tfidf, id2word=dictionary, num_topics=100)
     corpus_lda = lda[corpus_tfidf]
     lda.print_topics(100)
+
+    index = similarities.MatrixSimilarity(lsi[corpus])
+    #index.save('test.index')
+    #index = similarities.MatrixSimilarity.load('test.index')
+
+    #query = "trade economy finance currency money international market".split()
+    #query = "cancer illness hospital ill critical drugs medecine".split()
+    query = "police crime detective steal investigate criminal arrest judge".split()
+    query_stems = stemList(query)
+    print query_stems
+    query_bow = dictionary.doc2bow(query_stems)
+    print query_bow
+    query_vec = lsi[query_bow]
+    print query_vec
+    sims = index[query_vec]
+    sims = sorted(enumerate(sims), key=lambda item: -item[1])
+    for (book, sim) in sims:
+        f = idMap[book]
+        print sim, documents[f]["title"]
 
 #getAuthors()
 #getBooks()
