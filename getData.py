@@ -135,14 +135,20 @@ def model(documents, query_stems):
     texts = []
     idMap = {}
     
+    o = open('idMap.txt','w')
     t = 0
     for f in documents:
         texts.append(documents[f]["fulltext-no-stop"])
         idMap[t] = f
+        o.write(str(t) + "\t" + f + "\n")
         t += 1
+    o.close()
 
     dictionary = corpora.Dictionary(texts)
+    dictionary.save('books.dict')
+
     corpus = [dictionary.doc2bow(text) for text in texts]
+    corpora.MmCorpus.serialize('bookcorpus.mm', corpus) 
 
     tfidf = models.TfidfModel(corpus)
     corpus_tfidf = tfidf[corpus]
@@ -153,6 +159,7 @@ def model(documents, query_stems):
 
     lsi = models.LsiModel(corpus_tfidf, id2word=dictionary,num_topics=100)
     corpus_lsi = lsi[corpus_tfidf]
+    lsi.save('books.lsi')
     lsi.print_topics(100)
 
     print "----------------------------"
@@ -164,13 +171,9 @@ def model(documents, query_stems):
     lda.print_topics(100)
 
     index = similarities.MatrixSimilarity(lsi[corpus])
-    index.save('test.index')
+    index.save('booksLSIIndex.index')
     #index = similarities.MatrixSimilarity.load('test.index')
 
-    #query = "trade economy finance currency money international market".split()
-    #query = "cancer illness hospital ill critical drugs medecine".split()
-    #query = "police crime detective steal investigate criminal arrest judge".split()
-    #query_stems = stemList(query)
     #print query_stems
     query_bow = dictionary.doc2bow(query_stems)
     print query_bow
@@ -178,15 +181,50 @@ def model(documents, query_stems):
     print query_vec
     sims = index[query_vec]
     sims = sorted(enumerate(sims), key=lambda item: -item[1])
-    for (book, sim) in sims[:100]:
+    for (book, sim) in sims[:10]:
         f = idMap[book]
         print sim, documents[f]["title"]
 
+def getSimilarity(query):
+
+    idMap = {}
+    i = open('idMap.txt','r')
+    for line in i:
+        line = line.strip().split("\t")
+        id = int(line[0])
+        f = line[1]
+        idMap[id] = f
+    i.close()
+
+    dictionary = corpora.Dictionary.load('books.dict')
+    #corpus = corpora.MmCorpus('bookcorpus.mm') 
+    model = models.LsiModel.load('books.lsi')
+    index = similarities.MatrixSimilarity.load('booksLSIIndex.index')
+
+    query_bow = dictionary.doc2bow(query_stems)
+    print query_bow
+    query_vec = model[query_bow]
+    print query_vec
+    sims = index[query_vec]
+    sims = sorted(enumerate(sims), key=lambda item: -item[1])
+    print "----------------"
+    print "similar docs"
+    for (book, sim) in sims[:10]:
+        f = idMap[book]
+        print sim, f #documents[f]["title"]
+
 #getAuthors()
 #getBooks()
+
+query = "trade economy finance currency money international market".split()
+query = "cancer illness hospital ill critical drugs medecine".split()
+query = "police crime detective steal investigate criminal arrest judge".split()
+query_stems = stemList(query)
+print query_stems
 #documents = getContent()
-#model(documents, query)
+#model(documents, query_stems)
 
 
+getSimilarity(query_stems)
 # todo: remove stopwords
 
