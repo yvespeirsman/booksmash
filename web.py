@@ -35,15 +35,15 @@ def displayResults():
   username = request.forms.query
   if not username[0] == "@":
     username = "@" + username
-  print username
-  statuses = api.GetUserTimeline(screen_name=username)
-  statuses =  [s.text for s in statuses]
+  try:
+    statuses = api.GetUserTimeline(screen_name=username)
+    statuses =  [s.text for s in statuses]
+  except:
+    statuses = []
   tokens = tokenize(statuses)
   stems = stemList(tokens)
-  print stems
   
-  books = getData.getSimilarity(stems, 'LDA')
-  print books
+  books = getData.getSimilarity(stems, 'LSI')
 
   t = template('templates/results.tpl',q=username,r=statuses,b=books)
   return t

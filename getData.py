@@ -260,8 +260,8 @@ def getSimilarity(query_stems, method):
 #query = "dark middle ages castle king queen dragon knight".split()
 #query_stems = stemList(query)
 #print query_stems
-documents = getContent()
-model(documents)
+#documents = getContent()
+#model(documents)
 
 
 #getSimilarity(query_stems)

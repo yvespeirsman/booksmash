@@ -52,7 +52,6 @@
     <div class="container">
 
 	<center>
-      <h1>Search engine</h1>
 	  <form action="/search"  method="post">
 		  <input type="text" class="input-large search-query" name="query"/>
 		  <button class="btn btn-primary" id="search-button" type="submit"><i class="icon-search icon-white"></i> Search</button>
@@ -60,6 +59,11 @@
 
 	</center>
 
+	%if len(r)==0:
+	<div class="alert alert-error">
+	  <p>Sorry, we didn't find a Twitter user by that name</p>
+	</div>
+	%else:
 	<div class="row">
 	  <div class="span6">
 	    <ul class="breadcrumb">
@@ -99,6 +103,7 @@
 		%end
 	    </ul>	    
 	  </div>
+	    %end
     </div> <!-- /container -->
 
     <!-- Le javascript
