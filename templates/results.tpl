@@ -2,13 +2,14 @@
 <!-- saved from url=(0065)http://twitter.github.io/bootstrap/examples/starter-template.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
-    <title>Bootstrap, from Twitter</title>
+    <title>Stemming</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
 
     <!-- Le styles -->
     <link href="http://twitter.github.io/bootstrap/assets/css/bootstrap.css" rel="stylesheet">
+    <link href="/static/base.css" rel="stylesheet">
     <style>
       body {
         padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
@@ -21,12 +22,6 @@
       <script src="../assets/js/html5shiv.js"></script>
     <![endif]-->
 
-    <!-- Fav and touch icons -->
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="http://twitter.github.io/bootstrap/assets/ico/apple-touch-icon-144-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="http://twitter.github.io/bootstrap/assets/ico/apple-touch-icon-114-precomposed.png">
-      <link rel="apple-touch-icon-precomposed" sizes="72x72" href="http://twitter.github.io/bootstrap/assets/ico/apple-touch-icon-72-precomposed.png">
-                    <link rel="apple-touch-icon-precomposed" href="http://twitter.github.io/bootstrap/assets/ico/apple-touch-icon-57-precomposed.png">
-                                   <link rel="shortcut icon" href="http://twitter.github.io/bootstrap/assets/ico/favicon.png">
   </head>
 
   <body style="">
@@ -39,12 +34,12 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" href="http://localhost:8080">Stemming</a>
-          <div class="nav-collapse collapse">
+          <a class="brand" href="http://0.0.0.0:5000">Stemming</a>
+          <!--<div class="nav-collapse collapse">
             <ul class="nav">
               <li><a href="http://twitter.github.io/bootstrap/examples/starter-template.html#about">About</a></li>
             </ul>
-          </div><!--/.nav-collapse -->
+          </div>/.nav-collapse -->
         </div>
       </div>
     </div>
@@ -90,7 +85,7 @@
 		  <div class="well">
 		    <div class="media-body">
 		    <div class="pull-left">
-		      <img class="media-object" src="{{b[i]["cover"]}}"/>
+		      <img class="media-object margincover" src="{{b[i]["cover"]}}"/>
 		    </div>
 		    <div class="media-body">
 		    <h4 class="media-heading">{{b[i]["title"]}}</h4>

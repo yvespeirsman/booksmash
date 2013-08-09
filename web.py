@@ -55,7 +55,10 @@ def displayBook(isbn):
   b = Book.Book(r.text)
   t = template('templates/book.tpl',book=b)
   return t
-  
+
+@route('/static/:path#.+#', name='static')
+def static(path):
+    return static_file(path, root='static')
 
 @route('/')
 def show():

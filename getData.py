@@ -228,27 +228,27 @@ def getSimilarity(query_stems, method):
     #corpus = corpora.MmCorpus('bookcorpus.mm')
     if method == "LSI":
         model = models.LsiModel.load('books.' + str(method).lower())
-        model.print_topics(200,num_words=100)
+        #model.print_topics(200,num_words=100)
     elif method == "LDA":
         model = models.LdaModel.load('books.' + str(method).lower())
-        model.print_topics(200,topn=100)
+        #model.print_topics(200,topn=100)
     index = similarities.MatrixSimilarity.load('books'+str(method)+'Index.index')
 
     query_bow = dictionary.doc2bow(query_stems)
-    print query_bow
+    #print query_bow
     query_vec = model[query_bow]
-    print query_vec
+    #print query_vec
     sims = index[query_vec]
     sims = sorted(enumerate(sims), key=lambda item: -item[1])
-    print "----------------"
-    print "similar docs"
+    #print "----------------"
+    #print "similar docs"
     results = []
     for (book, sim) in sims[:10]:
         title = idMap[book]["title"]
         author = idMap[book]["author"]
         cover = idMap[book]["cover"]
         isbn = idMap[book]["isbn"]
-        print sim, title, author
+        #print sim, title, author
         results.append({"title":title, "author":author, "cover":cover,"isbn":isbn})
     return results
 
