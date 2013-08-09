@@ -49,58 +49,18 @@
       </div>
     </div>
 
-    <div class="container">
-
-	<center>
-      <h1>Search engine</h1>
-	  <form action="/search"  method="post">
-		  <input type="text" class="input-large search-query" name="query"/>
-		  <button class="btn btn-primary" id="search-button" type="submit"><i class="icon-search icon-white"></i> Search</button>
-	  </form>
-
-	</center>
-
-	<div class="row">
-	  <div class="span6">
-	    <ul class="breadcrumb">
-	      <li>{{len(r)}} most recent tweets for {{q}}</li>
-	    </ul>
-	    <!--<table>
-	      <tbody>
-		<tr><td>-->
-	            %for i in range(0, len(r)):
-		    <blockquote>{{r[i]}}</blockquote>
-		    %end
-                <!--</td></tr>
-	      </tbody>
-	    </table>-->
-	  </div>
-	  <div class="span6">
-	    <ul class="breadcrumb">
-	      <li>10 best books</li>
-	    </ul>
-	    <ul class="media-list">
-	      %for i in range(0, len(b)):
-		<li class="media">
-		  <a href="book/{{b[i]["isbn"]}}">
-		  <div class="well">
-		    <div class="media-body">
-		    <div class="pull-left">
-		      <img class="media-object" src="{{b[i]["cover"]}}"/>
-		    </div>
-		    <div class="media-body">
-		    <h4 class="media.heading">{{b[i]["title"]}}</h4> 
-		    <p>{{b[i]["author"]}} {{b[i]["isbn"]}}</p>
-		    </div>
-		    </div>
-		  </a>
-		</li>
-	
-		%end
-	    </ul>	    
-	  </div>
-    </div> <!-- /container -->
-
+    <div class="well">
+      <div class="row-fluid">
+	<div class="span3">
+	  <img src="{{book.cover}}"/>
+	</div>
+	<div class="span9">
+	{{book.author}}<br>
+	{{book.title}}<br>
+	{{book.isbn}}<br>
+	</div>
+	{{book.desc}}
+    </div>
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

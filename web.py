@@ -6,13 +6,15 @@ import twitter
 from nltk.tokenize import word_tokenize
 from nltk.stem.porter import PorterStemmer
 import getData
+import requests
+import Book
 
 stemmer = PorterStemmer()
 
 def tokenize(statuses):
   tokens = []
   for status in statuses:
-    tokstatus = word_tokenize(status.text)
+    tokstatus = word_tokenize(status)
     for token in tokstatus:
       tokens.append(token)
   return tokens
@@ -31,19 +33,29 @@ def displayResults():
                   access_token_key='240792557-Dw0Jsyo4BI8wy15GslZZdQqVrjzb30DHYSPacUoA',
                   access_token_secret='e2bVx7dfpVLMJYzUYfd46cpFIFSIqcrjYFR6SUTAE')
   username = request.forms.query
+  if not username[0] == "@":
+    username = "@" + username
   print username
   statuses = api.GetUserTimeline(screen_name=username)
-  print [s.text for s in statuses]
+  statuses =  [s.text for s in statuses]
   tokens = tokenize(statuses)
   stems = stemList(tokens)
-  print statuses[0].text
   print stems
   
-  docs = getData.getContent()
-  getData.model(docs, stems)
+  books = getData.getSimilarity(stems, 'LSI')
+  print books
 
-  t = template('templates/results.tpl',q=username,r=statuses)
+  t = template('templates/results.tpl',q=username,r=statuses,b=books)
   return t
+
+@route('/book/<isbn>')
+def displayBook(isbn):
+  uri = "http://api.harpercollins.com/api/v3/hcapim?apiname=ProductInfo&format=XML&isbn="+ str(isbn) + "&apikey=6wbqgghpzmxhmtf5dmykv2bj"
+  r = requests.get(uri)
+  b = Book.Book(r.text)
+  t = template('templates/book.tpl',book=b)
+  return t
+  
 
 @route('/')
 def show():

@@ -88,7 +88,10 @@ def getContent():
 
             title = root.find("Product_Detail").find("Title").text
             title = re.sub("\s[A-Z]+\s?$","",title)
+            title = title.strip()
+            author = root.find("Product_Detail").find("Product_Contributors").find("Product_Contributor").find("Display_Name").text
             isbn = root.find("Product_Detail").find("ISBN").text
+            cover = root.find("Product_Detail").find("CoverImageURL_Medium").text
             if root.find('Imprint') != "Rayo" and not titlesDone.has_key(title):
                 titlesDone[title] = 1
                 for el in root.iter("Product_Content"):
@@ -111,7 +114,9 @@ def getContent():
             documents[f] = {}
             documents[f]["title"] = title
             documents[f]["isbn"] = isbn
+            documents[f]["author"] = author
             documents[f]["fulltext"] = document
+            documents[f]["cover"] = cover
     return documents
 
 i = open("english-stop-words.txt")
@@ -129,7 +134,7 @@ def filter(documents):
         documents[f]["fulltext-no-stop"] = textNoStop
     return documents
 
-def model(documents, query_stems):
+def model(documents):
 
     documents = filter(documents)
     texts = []
@@ -140,7 +145,14 @@ def model(documents, query_stems):
     for f in documents:
         texts.append(documents[f]["fulltext-no-stop"])
         idMap[t] = f
-        o.write(str(t) + "\t" + f + "\n")
+        title = documents[f]["title"]
+        isbn = documents[f]["isbn"]
+        author = documents[f]["author"]
+        cover = documents[f]["cover"]
+        if cover is None:
+            cover = "NOCOVER"
+        print title, isbn
+        o.write(str(t) + "\t" + f + "\t" + title.encode('ascii','xmlcharrefreplace') + "\t" + isbn + "\t" + author + "\t" + cover + "\n")
         t += 1
     o.close()
 
@@ -169,11 +181,16 @@ def model(documents, query_stems):
     lda = models.ldamodel.LdaModel(corpus_tfidf, id2word=dictionary, num_topics=100)
     corpus_lda = lda[corpus_tfidf]
     lda.print_topics(100)
+    lda.save('books.lda')
 
-    index = similarities.MatrixSimilarity(lsi[corpus])
-    index.save('booksLSIIndex.index')
+
+    indexLSI = similarities.MatrixSimilarity(lsi[corpus])
+    indexLSI.save('booksLSIIndex.index')
+    indexLDA = similarities.MatrixSimilarity(lda[corpus])
+    indexLDA.save('booksLDAIndex.index')
+
     #index = similarities.MatrixSimilarity.load('test.index')
-
+    """
     #print query_stems
     query_bow = dictionary.doc2bow(query_stems)
     print query_bow
@@ -184,8 +201,9 @@ def model(documents, query_stems):
     for (book, sim) in sims[:10]:
         f = idMap[book]
         print sim, documents[f]["title"]
+    """
 
-def getSimilarity(query):
+def getSimilarity(query_stems, method):
 
     idMap = {}
     i = open('idMap.txt','r')
@@ -193,13 +211,21 @@ def getSimilarity(query):
         line = line.strip().split("\t")
         id = int(line[0])
         f = line[1]
-        idMap[id] = f
+        title = line[2]
+        isbn = line[3]
+        author = line[4]
+        cover = line[5]
+        idMap[id] = {}
+        idMap[id]["title"] = title
+        idMap[id]["author"] = author
+        idMap[id]["cover"] = cover
+        idMap[id]["isbn"] = isbn
     i.close()
 
     dictionary = corpora.Dictionary.load('books.dict')
     #corpus = corpora.MmCorpus('bookcorpus.mm') 
-    model = models.LsiModel.load('books.lsi')
-    index = similarities.MatrixSimilarity.load('booksLSIIndex.index')
+    model = models.LsiModel.load('books.' + str(method).lower())
+    index = similarities.MatrixSimilarity.load('books'+str(method)+'Index.index')
 
     query_bow = dictionary.doc2bow(query_stems)
     print query_bow
@@ -209,22 +235,28 @@ def getSimilarity(query):
     sims = sorted(enumerate(sims), key=lambda item: -item[1])
     print "----------------"
     print "similar docs"
+    results = []
     for (book, sim) in sims[:10]:
-        f = idMap[book]
-        print sim, f #documents[f]["title"]
+        title = idMap[book]["title"]
+        author = idMap[book]["author"]
+        cover = idMap[book]["cover"]
+        isbn = idMap[book]["isbn"]
+        print sim, title, author
+        results.append({"title":title, "author":author, "cover":cover,"isbn":isbn})
+    return results
 
 #getAuthors()
 #getBooks()
 
-query = "trade economy finance currency money international market".split()
-query = "cancer illness hospital ill critical drugs medecine".split()
-query = "police crime detective steal investigate criminal arrest judge".split()
-query_stems = stemList(query)
-print query_stems
+#query = "trade economy finance currency money international market".split()
+#query = "cancer illness hospital ill critical drugs medecine".split()
+#query = "dark middle ages castle king queen dragon knight".split()
+#query_stems = stemList(query)
+#print query_stems
 #documents = getContent()
-#model(documents, query_stems)
+#model(documents)
 
 
-getSimilarity(query_stems)
+#getSimilarity(query_stems)
 # todo: remove stopwords
-
+# todo: more authors
