@@ -42,7 +42,7 @@ def displayResults():
   stems = stemList(tokens)
   print stems
   
-  books = getData.getSimilarity(stems, 'LSI')
+  books = getData.getSimilarity(stems, 'LDA')
   print books
 
   t = template('templates/results.tpl',q=username,r=statuses,b=books)

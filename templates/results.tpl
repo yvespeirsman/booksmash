@@ -89,7 +89,7 @@
 		      <img class="media-object" src="{{b[i]["cover"]}}"/>
 		    </div>
 		    <div class="media-body">
-		    <h4 class="media.heading">{{b[i]["title"]}}</h4> 
+		    <h4 class="media-heading">{{b[i]["title"]}}</h4>
 		    <p>{{b[i]["author"]}} {{b[i]["isbn"]}}</p>
 		    </div>
 		    </div>

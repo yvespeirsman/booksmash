@@ -96,21 +96,22 @@ def getContent():
                 titlesDone[title] = 1
                 for el in root.iter("Product_Content"):
                     t = el.find('Content_Type_ID').text
-                    #if t == "609": # 605 is summary
-                    text = el.find('Content_Area1').text
-                    if text:
-                        text = re.sub('<.*?>','',text)
-                        text = parser.unescape(text)
-                        #print text
-                        sentences = sent_tokenize(text)
-                        for sent in sentences:
-                            tokens = word_tokenize(sent)
-                            #print sent
-                            #print tokens
-                            for token in tokens:
-                                stem = stemmer.stem(token.lower())
-                                #print token, "-->", stem
-                                document.append(stem)
+                    if t == "605": # 605 is summary
+                        text = el.find('Content_Area1').text
+                        if text:
+                            text = re.sub('<.*?>','',text)
+                            text = parser.unescape(text)
+                            #print text
+                            sentences = sent_tokenize(text)
+                            for sent in sentences:
+                                tokens = word_tokenize(sent)
+                                #print sent
+                                #print tokens
+                                for token in tokens:
+                                    if not stoplist.has_key(token.lower()) and len(token.lower()) > 2:
+                                        stem = stemmer.stem(token.lower())
+                                        #print token, "-->", stem
+                                        document.append(stem)
             documents[f] = {}
             documents[f]["title"] = title
             documents[f]["isbn"] = isbn
@@ -119,10 +120,10 @@ def getContent():
             documents[f]["cover"] = cover
     return documents
 
-i = open("english-stop-words.txt")
+i = open("english-stop-words-and-names.txt")
 stoplist = {}
 for line in i:
-    stoplist[line.strip()] = 1
+    stoplist[line.strip().lower()] = 1
 i.close()
 
 def filter(documents):
@@ -136,14 +137,14 @@ def filter(documents):
 
 def model(documents):
 
-    documents = filter(documents)
+    #documents = filter(documents)
     texts = []
     idMap = {}
     
     o = open('idMap.txt','w')
     t = 0
     for f in documents:
-        texts.append(documents[f]["fulltext-no-stop"])
+        texts.append(documents[f]["fulltext"])
         idMap[t] = f
         title = documents[f]["title"]
         isbn = documents[f]["isbn"]
@@ -164,23 +165,24 @@ def model(documents):
 
     tfidf = models.TfidfModel(corpus)
     corpus_tfidf = tfidf[corpus]
+    
 
     print "----------------------------"
     print "LSA"
     print "----------------------------"
 
-    lsi = models.LsiModel(corpus_tfidf, id2word=dictionary,num_topics=100)
+    lsi = models.LsiModel(corpus_tfidf, id2word=dictionary,num_topics=200)
     corpus_lsi = lsi[corpus_tfidf]
     lsi.save('books.lsi')
-    lsi.print_topics(100)
+    lsi.print_topics(200)
 
     print "----------------------------"
     print "LDA"
     print "----------------------------"
 
-    lda = models.ldamodel.LdaModel(corpus_tfidf, id2word=dictionary, num_topics=100)
+    lda = models.ldamodel.LdaModel(corpus_tfidf, id2word=dictionary, num_topics=200)
     corpus_lda = lda[corpus_tfidf]
-    lda.print_topics(100)
+    lda.print_topics(200)
     lda.save('books.lda')
 
 
@@ -223,8 +225,13 @@ def getSimilarity(query_stems, method):
     i.close()
 
     dictionary = corpora.Dictionary.load('books.dict')
-    #corpus = corpora.MmCorpus('bookcorpus.mm') 
-    model = models.LsiModel.load('books.' + str(method).lower())
+    #corpus = corpora.MmCorpus('bookcorpus.mm')
+    if method == "LSI":
+        model = models.LsiModel.load('books.' + str(method).lower())
+        model.print_topics(200,num_words=100)
+    elif method == "LDA":
+        model = models.LdaModel.load('books.' + str(method).lower())
+        model.print_topics(200,topn=100)
     index = similarities.MatrixSimilarity.load('books'+str(method)+'Index.index')
 
     query_bow = dictionary.doc2bow(query_stems)
@@ -253,8 +260,8 @@ def getSimilarity(query_stems, method):
 #query = "dark middle ages castle king queen dragon knight".split()
 #query_stems = stemList(query)
 #print query_stems
-#documents = getContent()
-#model(documents)
+documents = getContent()
+model(documents)
 
 
 #getSimilarity(query_stems)

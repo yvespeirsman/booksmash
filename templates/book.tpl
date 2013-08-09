@@ -49,17 +49,31 @@
       </div>
     </div>
 
-    <div class="well">
-      <div class="row-fluid">
-	<div class="span3">
-	  <img src="{{book.cover}}"/>
+    <div class="row-fluid">
+    <div class="well span6 offset3">
+      <div class="media-body">
+	<div class="pull-left">
+	  <img class="media-object" src="{{book.cover}}">
 	</div>
-	<div class="span9">
-	{{book.author}}<br>
-	{{book.title}}<br>
-	{{book.isbn}}<br>
+	<div>
+	  <h2 class="media-heading">{{book.title}}</h2>
+	  <h4 class="media-heading">{{book.author}}</h4>
+	  %if book.category is not None:
+	  <span class="label label-success">{{book.category}}</span>
+	  %end
+	  {{book.isbn}}<br>
 	</div>
+      </div>
+      
 	{{book.desc}}
+        %for reviewer in book.reviews.keys():
+           <blockquote>
+           <p>{{book.reviews[reviewer]}}</p>
+	   <small>{{reviewer}}</small>
+	   </blockquote>
+        %end
+    </div>
+    </center>
     </div>
     <!-- Le javascript
     ================================================== -->
