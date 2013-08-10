@@ -224,15 +224,15 @@ def getSimilarity(query_stems, method):
         idMap[id]["isbn"] = isbn
     i.close()
 
-    dictionary = corpora.Dictionary.load('books.dict')
-    #corpus = corpora.MmCorpus('bookcorpus.mm')
+    dictionary = corpora.Dictionary.load('model/books.dict')
+    #corpus = corpora.MmCorpus('model/bookcorpus.mm')
     if method == "LSI":
-        model = models.LsiModel.load('books.' + str(method).lower())
+        model = models.LsiModel.load('model/books.' + str(method).lower())
         #model.print_topics(200,num_words=100)
     elif method == "LDA":
-        model = models.LdaModel.load('books.' + str(method).lower())
+        model = models.LdaModel.load('model/books.' + str(method).lower())
         #model.print_topics(200,topn=100)
-    index = similarities.MatrixSimilarity.load('books'+str(method)+'Index.index')
+    index = similarities.MatrixSimilarity.load('model/books'+str(method)+'Index.index')
 
     query_bow = dictionary.doc2bow(query_stems)
     #print query_bow
