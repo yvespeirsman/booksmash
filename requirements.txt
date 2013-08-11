@@ -7,3 +7,4 @@ numpy==1.7.1
 requests==1.2.3
 twitter==1.10.0
 wsgiref==0.1.2
+gensim
