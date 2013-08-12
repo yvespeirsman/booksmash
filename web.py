@@ -14,7 +14,6 @@ stemmer = PorterStemmer()
 def tokenize(statuses):
   tokens = []
   for status in statuses:
-    print status
     tokstatus = word_tokenize(status)
     for token in tokstatus:
       tokens.append(token)
