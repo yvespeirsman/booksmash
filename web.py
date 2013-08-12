@@ -14,6 +14,7 @@ stemmer = PorterStemmer()
 def tokenize(statuses):
   tokens = []
   for status in statuses:
+    print status
     tokstatus = word_tokenize(status)
     for token in tokstatus:
       tokens.append(token)
@@ -33,13 +34,16 @@ def displayResults():
                   access_token_key='240792557-Dw0Jsyo4BI8wy15GslZZdQqVrjzb30DHYSPacUoA',
                   access_token_secret='e2bVx7dfpVLMJYzUYfd46cpFIFSIqcrjYFR6SUTAE')
   username = request.forms.query
-  if not username[0] == "@":
-    username = "@" + username
-  try:
-    statuses = api.GetUserTimeline(screen_name=username)
-    statuses =  [s.text for s in statuses]
-  except:
-    statuses = []
+  if len(username.split(" ")) == 1:
+    if not username[0] == "@":
+      username = "@" + username
+    try:
+      statuses = api.GetUserTimeline(screen_name=username)
+      statuses =  [s.text for s in statuses]
+    except:
+      statuses = []
+  else:
+    statuses = [username]
   tokens = tokenize(statuses)
   stems = stemList(tokens)
   
