@@ -27,7 +27,7 @@ def getAuthors():
     authorList = authors.keys()
     authorList.sort()
 
-    for author in authorList[1000:2000]:
+    for author in authorList[2000:3000]:
         print '--', author
         uri = "http://api.harpercollins.com/api/v3/hcapim?apiname=catalog&format=XML&authorglobalid="+str(author)+"&apikey=6wbqgghpzmxhmtf5dmykv2bj" 
    
@@ -49,9 +49,11 @@ def getBooks():
     for f in files:
         books = []
         author = f[13:-4]
-        tree = ET.parse(f)
-        root = tree.getroot()
-
+        try:
+            tree = ET.parse(f)
+            root = tree.getroot()
+        except:
+            continue
         for el in root.iter('ISBN'):
             books.append(el.text)
         books = list(set(books))
@@ -101,7 +103,7 @@ def getContent():
                         if text:
                             text = re.sub('<.*?>','',text)
                             text = parser.unescape(text)
-                            #print text
+                            #print title, "==", text
                             sentences = sent_tokenize(text)
                             for sent in sentences:
                                 tokens = word_tokenize(sent)
@@ -112,12 +114,14 @@ def getContent():
                                         stem = stemmer.stem(token.lower())
                                         #print token, "-->", stem
                                         document.append(stem)
-            documents[f] = {}
-            documents[f]["title"] = title
-            documents[f]["isbn"] = isbn
-            documents[f]["author"] = author
-            documents[f]["fulltext"] = document
-            documents[f]["cover"] = cover
+            if len(document) > 20:
+                documents[f] = {}
+                documents[f]["title"] = title
+                documents[f]["isbn"] = isbn
+                documents[f]["author"] = author
+                documents[f]["fulltext"] = document
+                documents[f]["cover"] = cover
+    print "NUM:", len(documents.keys())
     return documents
 
 i = open("english-stop-words-and-names.txt")
@@ -260,7 +264,7 @@ def getSimilarity(query_stems, method):
 #query = "dark middle ages castle king queen dragon knight".split()
 #query_stems = stemList(query)
 #print query_stems
-#documents = getContent()
+documents = getContent()
 #model(documents)
 
 
