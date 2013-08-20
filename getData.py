@@ -27,7 +27,7 @@ def getAuthors():
     authorList = authors.keys()
     authorList.sort()
 
-    for author in authorList[2000:3000]:
+    for author in authorList[3229:5000]:
         print '--', author
         uri = "http://api.harpercollins.com/api/v3/hcapim?apiname=catalog&format=XML&authorglobalid="+str(author)+"&apikey=6wbqgghpzmxhmtf5dmykv2bj" 
    
@@ -45,7 +45,7 @@ def stemList(tokens):
 
 def getBooks():
     files = glob.glob("data/authors/*.xml")
-   
+    t = 0
     for f in files:
         books = []
         author = f[13:-4]
@@ -65,8 +65,12 @@ def getBooks():
                 uri = "http://api.harpercollins.com/api/v3/hcapim?apiname=ProductInfo&format=XML&isbn="+ str(isbn) + "&apikey=6wbqgghpzmxhmtf5dmykv2bj"
 
                 os.system('curl "' + uri + '" > ' + oFile)
+                t = t+1
             else:
                 print "already exists"
+            print t
+        if t >= 3000:
+            break
 
 parser = HTMLParser.HTMLParser()
 stemmer = PorterStemmer()
@@ -264,7 +268,7 @@ def getSimilarity(query_stems, method):
 #query = "dark middle ages castle king queen dragon knight".split()
 #query_stems = stemList(query)
 #print query_stems
-documents = getContent()
+#documents = getContent()
 #model(documents)
 
 
