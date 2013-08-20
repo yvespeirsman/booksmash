@@ -34,7 +34,12 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" href="http://0.0.0.0:5000">Stemming</a>
+          <a class="brand" href="/">Stemming</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <li><a href="/logout">Logout</a></li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

@@ -34,12 +34,12 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="brand" href="http://0.0.0.0:5000">Stemming</a>
-          <!--<div class="nav-collapse collapse">
+          <a class="brand" href="/">Stemming</a>
+          <div class="nav-collapse collapse">
             <ul class="nav">
-              <li><a href="http://twitter.github.io/bootstrap/examples/starter-template.html#about">About</a></li>
+              <li><a href="/logout">Logout</a></li>
             </ul>
-          </div>/.nav-collapse -->
+          </div>/.nav-collapse
         </div>
       </div>
     </div>
