@@ -81,7 +81,7 @@
 	    <ul class="media-list">
 	      %for i in range(0, len(b)):
 		<li class="media">
-		  <a href="book/{{b[i]["isbn"]}}">
+		  <a href="/book/{{b[i]["isbn"]}}">
 		  <div class="well">
 		    <div class="media-body">
 		    <div class="pull-left">

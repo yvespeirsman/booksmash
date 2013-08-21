@@ -60,7 +60,12 @@
 
 	<br><br>
 	Or let these people inspire you:<br><br>
-        <img src="/static/img/barack_obama.jpg" />Barack Obama
+        <img src="/static/img/barack_obama.jpg" /><a href="search/BarackObama">Barack Obama</a> 
+	<img src="/static/img/barack_obama.jpg" /><a href="search/Pontifex">Pope Francis I</a>
+	<img src="/static/img/barack_obama.jpg" /><a href="search/Cristiano">Cristiano Ronaldo</a>
+	<img src="/static/img/barack_obama.jpg" /><a href="search/PerezHilton">Perez Hilton</a>
+	<img src="/static/img/barack_obama.jpg" /><a href="search/AmericanCancer">American Cancer Foundation</a>
+	<img src="/static/img/barack_obama.jpg" /><a href="search/AlGore">Al Gore</a>
       </center>
     </div> 
 

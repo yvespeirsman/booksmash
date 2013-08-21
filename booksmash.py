@@ -66,12 +66,14 @@ def post_get(name, default=''):
     return bottle.request.POST.get(name, default).strip()
 
 @bottle.post('/search')
-def displayResults():
+@bottle.route('/search/<username>')
+def displayResults(username=""):
   api = twitter.Api(consumer_key='tGj4FIQtq1OcuE4HkFDag',
                   consumer_secret='Ii37iuXec8C7va4iUYWjGS9oD1natpZlAHKA2RVYNs',
                   access_token_key='240792557-Dw0Jsyo4BI8wy15GslZZdQqVrjzb30DHYSPacUoA',
                   access_token_secret='e2bVx7dfpVLMJYzUYfd46cpFIFSIqcrjYFR6SUTAE')
-  username = bottle.request.forms.query
+  if username=="":
+    username = bottle.request.forms.query
   if len(username.split(" ")) == 1:
     if not username[0] == "@":
       username = "@" + username

@@ -11,7 +11,7 @@ from gensim import corpora, models, similarities
 import logging
 import random
 
-logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', filename="log.txt", level=logging.INFO)
 stemmer = PorterStemmer()
 
 def getAuthors():
@@ -373,6 +373,25 @@ def getLocales():
             d[imprint.text] = 1
     print d.keys()
 
+def writeTopics():
+    model = models.LsiModel.load('model/books.lda')
+    model.print_topics(100,topn=100) #num_words
+
+def readTopics():
+    i = open('log.txt')
+    for line in i:
+        line = line.strip().split()
+        for t in line:
+            if not t[0] == '-':
+                if len(t.split('*')) > 1:
+                    print t.split('*')[1],
+                else:
+                    print t,
+        print "\n"
+    i.close()
+
+#writeTopics()
+#readTopics()
 
 #getLocales()
 #getImprints()
