@@ -37,7 +37,7 @@
           <a class="brand" href="/">Stemming</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li><a href="/Logout">Logout</a></li>
+              <li><a href="/logout">Logout</a></li>
             </ul>
           </div>
         </div>
