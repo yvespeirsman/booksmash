@@ -9,31 +9,37 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem.porter import PorterStemmer
 from gensim import corpora, models, similarities
 import logging
+import random
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 stemmer = PorterStemmer()
 
 def getAuthors():
-    tree = ET.parse('data/hc_authors.xml')
+    tree = ET.parse('data/perennial_ustrade_authors.xml')
     root = tree.getroot()
 
     authors = {}
 
     for el in root.iter('Contributor_List'):
+        author = el.find('Contributor_Persona_ID').text
+        info = el.find('Contributor_Detail_URI').text
+        print author, info
+        """
         for author in el.iter('Contributor_Persona_ID'):
             print author.text
             authors[author.text] = 1
-
+        """
     authorList = authors.keys()
     authorList.sort()
 
+    """
     for author in authorList[3229:5000]:
         print '--', author
         uri = "http://api.harpercollins.com/api/v3/hcapim?apiname=catalog&format=XML&authorglobalid="+str(author)+"&apikey=6wbqgghpzmxhmtf5dmykv2bj" 
    
         os.system('curl "' + uri + '" > data/authors/' + str(author) + '.xml')
-
-#getAuthors() 
+    """
+    
       
 def stemList(tokens):
     stems = []
@@ -44,9 +50,12 @@ def stemList(tokens):
 
 
 def getBooks():
-    files = glob.glob("data/authors/*.xml")
+    files = glob.glob("data/perennial*.xml")
     t = 0
+    random.shuffle(files)
+    stop = 0
     for f in files:
+      if stop == 0:
         books = []
         author = f[13:-4]
         try:
@@ -54,9 +63,19 @@ def getBooks():
             root = tree.getroot()
         except:
             continue
-        for el in root.iter('ISBN'):
-            books.append(el.text)
+        for el in root.iter('Products'):
+            isbn = el.find('ISBN').text
+            date = el.find('On_Sale_Date').text
+            imprint = el.find('Imprint').text
+            form = el.find('Format').text
+            print isbn, imprint, form
+            if re.search('back', form):
+                if date:
+                    year = int(date.split(' ')[0].split('/')[2])
+                    if year > 9 and year < 14:
+                        books.append(isbn)
         books = list(set(books))
+        print "found", len(books), "books"
 
         for isbn in books:
             oFile = "data/books/" + str(author) +"-"+ str(isbn) + ".xml"
@@ -69,11 +88,67 @@ def getBooks():
             else:
                 print "already exists"
             print t
-        if t >= 3000:
+        if t >= 48000:
+            stop = 1
             break
 
 parser = HTMLParser.HTMLParser()
 stemmer = PorterStemmer()
+
+def getContentFromImprints():
+    files = glob.glob("data/imprints/*.xml")
+    documents = {}
+    titlesDone = {}
+    t = 0
+    done = 0
+    for f in files:
+        print f, t
+        try:
+            tree = ET.parse(f)
+        except:
+            continue
+        root = tree.getroot()
+
+        for product in root.iter('Product_Group'):
+            title = product.find('Products').find('Title').text
+            titleS = re.sub("\s[A-Z]+\s?$","",title)
+            titleS = re.sub("[Tt]he","",titleS)
+            titleS = re.sub(",","",titleS)
+            titleS = re.sub(" ", "", titleS)
+            titleS = titleS.strip().lower()
+            if titleS in titlesDone:
+                done = done+1
+                print titleS, "DONE", done
+            else:
+
+                titlesDone[titleS] = 1
+
+                isbn = product.find('Products').find('ISBN').text
+                author = product.find('Products').find('Author1').text
+                summary = product.find('Product_Group_SEO_Copy')
+                cover = product.find('Products').find("CoverImageURL_Medium").text
+                if summary is not None:
+                    summaryText = summary.text 
+                    if summaryText is not None and len(summaryText.split()) > 20:
+                        summaryTokens = []
+                        text = re.sub('<.*?>','',summaryText)
+                        text = parser.unescape(text)
+                        sentences = sent_tokenize(text)
+                        for sent in sentences:
+                            tokens = word_tokenize(sent)
+                            for token in tokens:
+                                if not stoplist.has_key(token.lower()) and len(token.lower()) > 2:
+                                    stem = stemmer.stem(token.lower())                                
+                                    summaryTokens.append(stem)
+                        t = t+1            
+                        documents[t] = {}
+                        documents[t]["title"] = title
+                        documents[t]["isbn"] = isbn
+                        documents[t]["author"] = author
+                        documents[t]["fulltext"] = summaryTokens
+                        documents[t]["cover"] = cover
+    print "NUM:", len(documents.keys())
+    return documents
 
 def getContent():
     files = glob.glob("data/books/*.xml")
@@ -161,7 +236,11 @@ def model(documents):
         if cover is None:
             cover = "NOCOVER"
         print title, isbn
-        o.write(str(t) + "\t" + f + "\t" + title.encode('ascii','xmlcharrefreplace') + "\t" + isbn + "\t" + author + "\t" + cover + "\n")
+
+        try:
+            o.write(str(t) + "\t" + str(f) + "\t" + title.encode('ascii','xmlcharrefreplace') + "\t" + isbn + "\t" + author + "\t" + cover + "\n")
+        except:
+            o.write(str(t) + "\t" + str(f) + "\tX\tY\tZ\tQ\n")
         t += 1
     o.close()
 
@@ -179,18 +258,18 @@ def model(documents):
     print "LSA"
     print "----------------------------"
 
-    lsi = models.LsiModel(corpus_tfidf, id2word=dictionary,num_topics=200)
+    lsi = models.LsiModel(corpus_tfidf, id2word=dictionary,num_topics=100)
     corpus_lsi = lsi[corpus_tfidf]
     lsi.save('books.lsi')
-    lsi.print_topics(200)
+    lsi.print_topics(100)
 
     print "----------------------------"
     print "LDA"
     print "----------------------------"
 
-    lda = models.ldamodel.LdaModel(corpus_tfidf, id2word=dictionary, num_topics=200)
+    lda = models.ldamodel.LdaModel(corpus_tfidf, id2word=dictionary, num_topics=100)
     corpus_lda = lda[corpus_tfidf]
-    lda.print_topics(200)
+    lda.print_topics(100)
     lda.save('books.lda')
 
 
@@ -236,7 +315,7 @@ def getSimilarity(query_stems, method):
     #corpus = corpora.MmCorpus('model/bookcorpus.mm')
     if method == "LSI":
         model = models.LsiModel.load('model/books.' + str(method).lower())
-        #model.print_topics(200,num_words=100)
+        model.print_topics(100,num_words=100)
     elif method == "LDA":
         model = models.LdaModel.load('model/books.' + str(method).lower())
         #model.print_topics(200,topn=100)
@@ -260,15 +339,53 @@ def getSimilarity(query_stems, method):
         results.append({"title":title, "author":author, "cover":cover,"isbn":isbn})
     return results
 
+def getImprints():
+    d = {}
+    files = glob.glob('data/authors/*.xml')
+    for f in files:
+        try:
+            tree = ET.parse(f)
+        except:
+            continue   
+        root = tree.getroot()
+        for imprint in root.iter('Imprint'):
+            d[imprint.text] = 1
+    print d.keys()
+
+    for imprint in d.keys():
+        imp1 = re.sub(' ', '%20', imprint)
+        uri = "http://api.harpercollins.com/api/v3/hcapim?apiname=catalog&format=XML&imprint="+ imp1 +"&locale=US+Trade&apikey=6wbqgghpzmxhmtf5dmykv2bj"
+        print imprint, imp1, uri
+        imp = re.sub(' ', '_', imprint)
+        fOut = imp + '_USTrade.xml'
+        os.system('curl "' + uri + '" > data/imprints/' + fOut)
+
+def getLocales():
+    d = {}
+    files = glob.glob('data/authors/*.xml')
+    for f in files:
+        try:
+            tree = ET.parse(f)
+        except:
+            continue   
+        root = tree.getroot()
+        for imprint in root.iter('Locale_Desc'):
+            d[imprint.text] = 1
+    print d.keys()
+
+
+#getLocales()
+#getImprints()
 #getAuthors()
 #getBooks()
+#getContentFromImprints()
 
 #query = "trade economy finance currency money international market".split()
 #query = "cancer illness hospital ill critical drugs medecine".split()
 #query = "dark middle ages castle king queen dragon knight".split()
 #query_stems = stemList(query)
 #print query_stems
-#documents = getContent()
+#documents = getContentFromImprints()
 #model(documents)
 
 
