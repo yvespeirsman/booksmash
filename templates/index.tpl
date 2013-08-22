@@ -60,12 +60,17 @@
 
 	<br><br>
 	Or let these people inspire you:<br><br>
-        <img src="/static/img/barack_obama.jpg" /><a href="search/BarackObama">Barack Obama</a> 
-	<img src="/static/img/barack_obama.jpg" /><a href="search/Pontifex">Pope Francis I</a>
-	<img src="/static/img/barack_obama.jpg" /><a href="search/Cristiano">Cristiano Ronaldo</a>
-	<img src="/static/img/barack_obama.jpg" /><a href="search/PerezHilton">Perez Hilton</a>
-	<img src="/static/img/barack_obama.jpg" /><a href="search/AmericanCancer">American Cancer Foundation</a>
-	<img src="/static/img/barack_obama.jpg" /><a href="search/AlGore">Al Gore</a>
+	<div class="row-fluid">
+	  <div class="span3 offset3">
+        <p align="left"><img src="/static/img/BarackObama.jpg" />  <a href="search/BarackObama">Barack Obama</a></p>
+	<p align="left"><img src="/static/img/Pontifex.jpg" />  <a href="search/Pontifex">Pope Francis I</a></p>
+	<p align="left"><img src="/static/img/Cristiano.jpg" />  <a href="search/Cristiano">Cristiano Ronaldo</a></p>
+	</div>
+	  <div class="span5 offset1">
+	<p align="left"><img src="/static/img/PerezHilton.jpg" />  <a href="search/PerezHilton">Perez Hilton</a></p>
+	<p align="left"><img src="/static/img/AmericanCancer.jpg" />  <a href="search/AmericanCancer">American Cancer Society</a></p>
+	<p align="left"><img src="/static/img/AlGore.jpg" />  <a href="search/AlGore">Al Gore</a></p>
+	</div>
       </center>
     </div> 
 
