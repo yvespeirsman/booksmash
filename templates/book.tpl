@@ -55,13 +55,18 @@
 	  <h2 class="media-heading">{{book.title}}</h2>
 	  <h4 class="media-heading">{{book.author}}</h4>
 	  %if book.category is not None:
+	  <br>
 	  <span class="label label-success">{{book.category}}</span>
 	  %end
-	  {{book.isbn}}<br>
+	  <br>
 	</div>
       </div>
       
-	<p class="lead">{{book.desc}}</p>
+	<p class="lead">
+	  %for i in range(0,len(book.desc)):
+	  {{book.desc[i]}}<br><br>
+	  %end
+	</p>
         %for reviewer in book.reviews.keys():
            <blockquote>
            <p>{{book.reviews[reviewer]}}</p>

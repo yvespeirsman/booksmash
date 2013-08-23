@@ -1,5 +1,6 @@
 import xml.etree.ElementTree as ET
 import HTMLParser
+import re
 
 parser = HTMLParser.HTMLParser()
 
@@ -12,7 +13,15 @@ class Book():
         self.author = root.find("Product_Detail").find("Product_Contributors").find("Product_Contributor").find("Display_Name").text
         self.cover = root.find("Product_Detail").find("CoverImageURL_Medium").text
         self.isbn = root.find("Product_Detail").find("ISBN").text
-        self.desc = root.find("Product_Detail").find("Product_Group_SEO_Copy").text
+        self.desc1 = root.find("Product_Detail").find("Product_Group_SEO_Copy").text
+        self.desc1 = re.sub('\n+','\n', self.desc1)
+        if self.desc1 is not None:
+            self.desc1 = parser.unescape(self.desc1)
+        self.desc = self.desc1.split("\n")
+        while self.desc[0] == '':
+            self.desc = self.desc[1:]
+        print self.desc
+
         self.summary = None
         self.category = None
         self.reviews = {}
@@ -21,8 +30,6 @@ class Book():
             self.title = parser.unescape(self.title)
         if self.author is not None:
             self.author = parser.unescape(self.author)
-        if self.desc is not None:
-            self.desc = parser.unescape(self.desc)
 
         for el in root.iter("Product_Content"):
             t = el.find('Content_Type_ID').text
