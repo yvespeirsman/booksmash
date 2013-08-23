@@ -1,12 +1,27 @@
 .margincover { 
-    margin:0px 20px 0px 20px;
+    margin:10px 10px 10px 10px;
 }
 
 .margincoverwide { 
     margin:0px 20px 20px 0px;
 }
 
+.leftalign {
+    margin-left:0px;
+}
+
+.result {
+    background-color:#b0c4de;
+    border-style:solid;
+    border-width:5px;
+    border-color:#98bf21;
+}
+
 a:link {text-decoration:none;}
 a:visited {text-decoration:none;}
 a:hover {text-decoration:none;}
 a:active {text-decoration:none;}
+
+p, div {
+    font-family: 'Rosario', Arial, sans-serif;
+}

@@ -7,12 +7,15 @@ import HTMLParser
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.stem.porter import PorterStemmer
+from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.corpus import wordnet
 from gensim import corpora, models, similarities
 import logging
 import random
 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', filename="log.txt", level=logging.INFO)
 stemmer = PorterStemmer()
+lemmatizer = WordNetLemmatizer()
 
 def getAuthors():
     tree = ET.parse('data/perennial_ustrade_authors.xml')
@@ -100,6 +103,7 @@ def getContentFromImprints():
     documents = {}
     titlesDone = {}
     t = 0
+    s = open('summaries.txt','w')
     done = 0
     for f in files:
         print f, t
@@ -130,24 +134,40 @@ def getContentFromImprints():
                 if summary is not None:
                     summaryText = summary.text 
                     if summaryText is not None and len(summaryText.split()) > 20:
+
                         summaryTokens = []
+                        """
                         text = re.sub('<.*?>','',summaryText)
                         text = parser.unescape(text)
                         sentences = sent_tokenize(text)
                         for sent in sentences:
                             tokens = word_tokenize(sent)
-                            for token in tokens:
+                            tags = nltk.pos_tag(tokens)
+                            for (token,tag) in tags:
                                 if not stoplist.has_key(token.lower()) and len(token.lower()) > 2:
-                                    stem = stemmer.stem(token.lower())                                
-                                    summaryTokens.append(stem)
-                        t = t+1            
+                                    if tag[0] == 'A':
+                                        lemma = lemmatizer.lemmatize(token,wordnet.ADJ)
+                                        summaryTokens.append(lemma.lower() + '/' + tag)
+                                    elif tag[0] == 'N':
+                                        lemma = lemmatizer.lemmatize(token,wordnet.NOUN)
+                                        summaryTokens.append(lemma.lower() + '/' + tag)
+                                    elif tag[0] == 'V':
+                                        lemma = lemmatizer.lemmatize(token,wordnet.VERB)
+                                        #stem = stemmer.stem(token.lower())                                
+                                        summaryTokens.append(lemma.lower() + '/' + tag)
+                        """
+                        t = t+1
+                        print t
                         documents[t] = {}
                         documents[t]["title"] = title
                         documents[t]["isbn"] = isbn
                         documents[t]["author"] = author
                         documents[t]["fulltext"] = summaryTokens
                         documents[t]["cover"] = cover
+                        s.write(documents[t]["isbn"] + "\t" + " ".join(documents[t]["fulltext"]).encode('utf-8') + "\n")
     print "NUM:", len(documents.keys())
+
+    s.close()
     return documents
 
 def getContent():
@@ -223,19 +243,35 @@ def model(documents):
     #documents = filter(documents)
     texts = []
     idMap = {}
+
+    sums = {}
+    i = open('summaries1.txt')
+    for line in i:
+        line = line.strip().split('\t')
+        isbn = line[0]
+        s = line[1].split()
+        st = []
+        for token in s:
+            word = token.split("/")[0]
+            tag = token.split("/")[-1]
+            st.append(word + '/' + tag[0])
+        sums[isbn] = st
+    i.close()
     
     o = open('idMap.txt','w')
     t = 0
     for f in documents:
-        texts.append(documents[f]["fulltext"])
         idMap[t] = f
         title = documents[f]["title"]
         isbn = documents[f]["isbn"]
+
+        texts.append(sums[isbn])
+        
         author = documents[f]["author"]
         cover = documents[f]["cover"]
         if cover is None:
             cover = "NOCOVER"
-        print title, isbn
+        #print title, isbn
 
         try:
             o.write(str(t) + "\t" + str(f) + "\t" + title.encode('ascii','xmlcharrefreplace') + "\t" + isbn + "\t" + author + "\t" + cover + "\n")
@@ -250,31 +286,31 @@ def model(documents):
     corpus = [dictionary.doc2bow(text) for text in texts]
     corpora.MmCorpus.serialize('bookcorpus.mm', corpus) 
 
-    tfidf = models.TfidfModel(corpus)
-    corpus_tfidf = tfidf[corpus]
+    #tfidf = models.TfidfModel(corpus)
+    #corpus_tfidf = tfidf[corpus]
     
 
     print "----------------------------"
     print "LSA"
     print "----------------------------"
 
-    lsi = models.LsiModel(corpus_tfidf, id2word=dictionary,num_topics=100)
-    corpus_lsi = lsi[corpus_tfidf]
-    lsi.save('books.lsi')
-    lsi.print_topics(100)
+    #lsi = models.LsiModel(corpus_tfidf, id2word=dictionary,num_topics=100)
+    #corpus_lsi = lsi[corpus_tfidf]
+    #lsi.save('books.lsi')
+    #lsi.print_topics(100)
 
     print "----------------------------"
     print "LDA"
     print "----------------------------"
 
-    lda = models.ldamodel.LdaModel(corpus_tfidf, id2word=dictionary, num_topics=100)
-    corpus_lda = lda[corpus_tfidf]
+    lda = models.ldamodel.LdaModel(corpus, id2word=dictionary, num_topics=100, passes=50)
+    corpus_lda = lda[corpus]
     lda.print_topics(100)
     lda.save('books.lda')
 
 
-    indexLSI = similarities.MatrixSimilarity(lsi[corpus])
-    indexLSI.save('booksLSIIndex.index')
+    #indexLSI = similarities.MatrixSimilarity(lsi[corpus])
+    #indexLSI.save('booksLSIIndex.index')
     indexLDA = similarities.MatrixSimilarity(lda[corpus])
     indexLDA.save('booksLDAIndex.index')
 
@@ -330,14 +366,15 @@ def getSimilarity(query_stems, method):
     #print "----------------"
     #print "similar docs"
     results = []
-    for (book, sim) in sims[:10]:
+    for (book, sim) in sims:
         title = idMap[book]["title"]
         author = idMap[book]["author"]
         cover = idMap[book]["cover"]
         isbn = idMap[book]["isbn"]
         #print sim, title, author
-        results.append({"title":title, "author":author, "cover":cover,"isbn":isbn})
-    return results
+        if len(title) > 2:
+            results.append({"title":title, "author":author, "cover":cover,"isbn":isbn})
+    return results[:12]
 
 def getImprints():
     d = {}
@@ -374,7 +411,7 @@ def getLocales():
     print d.keys()
 
 def writeTopics():
-    model = models.LsiModel.load('model/books.lda')
+    model = models.LsiModel.load('books.lda')
     model.print_topics(100,topn=100) #num_words
 
 def readTopics():
@@ -390,7 +427,6 @@ def readTopics():
         print "\n"
     i.close()
 
-#writeTopics()
 #readTopics()
 
 #getLocales()
@@ -406,6 +442,7 @@ def readTopics():
 #print query_stems
 #documents = getContentFromImprints()
 #model(documents)
+#writeTopics()
 
 
 #getSimilarity(query_stems)

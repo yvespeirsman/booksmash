@@ -10,6 +10,7 @@
     <!-- Le styles -->
     <link href="/static/bootstrap.css" rel="stylesheet">
     <link href="/static/base.css" rel="stylesheet">
+    <link href="http://fonts.googleapis.com/css?family=Rosario" rel="stylesheet" type="text/css">
     <style>
       body {
         padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */

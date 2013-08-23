@@ -65,6 +65,16 @@ def postd():
 def post_get(name, default=''):
     return bottle.request.POST.get(name, default).strip()
 
+def addLinks(text):
+  newtext = ""
+  tokens = text.split()
+  for token in tokens:
+    if token[0] == '@':
+      newtext += '<a href="">' + token + "</a> "
+    else:
+      newtext += token + " "
+  return newtext
+
 @bottle.post('/search')
 @bottle.route('/search/<username>')
 def displayResults(username=""):

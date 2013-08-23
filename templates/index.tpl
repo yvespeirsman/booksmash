@@ -10,6 +10,7 @@
     <!-- Le styles -->
     <link href="/static/bootstrap.css" rel="stylesheet">
     <link href="/static/base.css" rel="stylesheet">
+    <link href="http://fonts.googleapis.com/css?family=Rosario" rel="stylesheet" type="text/css">
     <style>
       body {
         padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
@@ -24,7 +25,7 @@
 
   </head>
 
-  <body style="">
+  <body style="" bgcolor="#A9F5BC">
 
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
@@ -48,14 +49,14 @@
 
       <center>
 	<br><br><br>
-	<h1>Stemming</h1>
-	<h3>Find books that <em>move</em> you.</h3>
+	<h1><img src="/static/img/BookIcon.png" width="60"/>  Stemming</h1>
+	<h3>Find books to suit your mood.</h3>
 	<br><br><br>
 	Enter a Twitter user name or a list of search terms.
 	<br><br>
 	<form action="/search"  method="post">
 	  <input type="text" class="input-large search-query" name="query"/>
-	  <button class="btn btn-primary" id="search-button" type="submit"><i class="icon-search icon-white"></i> Search</button>
+	  <button class="btn btn-primary" id="search-button" type="submit">Search</button>
 	</form>
 
 	<br><br>

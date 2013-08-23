@@ -10,6 +10,7 @@
     <!-- Le styles -->
     <link href="/static/bootstrap.css" rel="stylesheet">
     <link href="/static/base.css" rel="stylesheet">
+    <link href="http://fonts.googleapis.com/css?family=Rosario" rel="stylesheet" type="text/css">
     <style>
       body {
         padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
@@ -39,66 +40,92 @@
             <ul class="nav">
               <li><a href="/logout">Logout</a></li>
             </ul>
-          </div>/.nav-collapse
+          </div>
         </div>
       </div>
     </div>
 
     <div class="container">
+      <div class="row">
 
-	<center>
-	  <form action="/search"  method="post">
-		  <input type="text" class="input-large search-query" name="query"/>
-		  <button class="btn btn-primary" id="search-button" type="submit"><i class="icon-search icon-white"></i> Search</button>
-	  </form>
+	  <div class="span6">
+	    <h1><img src="/static/img/BookIcon.png" width="60"/>  Stemming</h1>
+	  </div> 
+	  <div class="span6">
+	    <br>
+	    <form action="/search"  method="post">
+	      <input type="text" class="input-large search-query" name="query"/>
+	      <button class="btn btn-primary" id="search-button" type="submit">Search</button>
+	    </form>
 
-	</center>
-
-	%if len(r)==0:
-	<div class="alert alert-error">
-	  <p>Sorry, we didn't find a Twitter user by that name</p>
+	  </div>
 	</div>
-	%else:
-	<div class="row">
-	  <div class="span6">
-	    <ul class="breadcrumb">
-	      <li>{{len(r)}} most recent tweets for {{q}}</li>
-	    </ul>
-	    <!--<table>
-	      <tbody>
-		<tr><td>-->
-	            %for i in range(0, len(r)):
-		    <blockquote>{{r[i]}}</blockquote>
-		    %end
-                <!--</td></tr>
-	      </tbody>
-	    </table>-->
-	  </div>
-	  <div class="span6">
-	    <ul class="breadcrumb">
-	      <li>10 best books</li>
-	    </ul>
-	    <ul class="media-list">
-	      %for i in range(0, len(b)):
-		<li class="media">
-		  <a href="/book/{{b[i]["isbn"]}}">
-		  <div class="well">
-		    <div class="media-body">
-		    <div class="pull-left">
-		      <img class="media-object margincover" src="{{b[i]["cover"]}}"/>
-		    </div>
-		    <div class="media-body">
-		    <h4 class="media-heading">{{b[i]["title"]}}</h4>
-		    <p>{{b[i]["author"]}} {{b[i]["isbn"]}}</p>
-		    </div>
-		    </div>
-		  </a>
-		</li>
 	
-		%end
-	    </ul>	    
-	  </div>
+      %if len(r)==0:
+      <div class="alert alert-error">
+	<p>Sorry, we didn't find a Twitter user by that name</p>
+      </div>
+      %else:
+      <div class="row">
+	<div class="span6">
+	  <ul class="breadcrumb">
+	    <li>{{len(r)}} most recent tweets for {{q}}</li>
+	  </ul>
+	  %for i in range(0, len(r)):
+	  <blockquote>{{r[i]}}</blockquote>
+	  %end
+	</div>
+	<div class="span6">
+	  <ul class="breadcrumb">
+	    <li>Bookshelf for {{q}}</li>
+	  </ul>
+	  <div class="row">
+	    %for i in range(0, 3):
+	    <div class="span2">
+	      <center>
+		<a href="/book/{{b[i]["isbn"]}}">
+		  <img class="media-object margincover" src="{{b[i]["cover"]}}"/>		  
+		</a>
+	      </center>
+	    </div>
 	    %end
+	  </div>
+	  <div class="row">
+	    %for i in range(3, 6):
+	    <div class="span2">
+	      <center>
+		<a href="/book/{{b[i]["isbn"]}}">
+		  <img class="media-object margincover" src="{{b[i]["cover"]}}"/>		  
+		</a>
+	      <center>
+	    </div>
+	    %end
+	  </div>
+	  <div class="row">
+	    %for i in range(6, 9):
+	    <div class="span2">
+	      <center>
+		<a href="/book/{{b[i]["isbn"]}}">
+		  <img class="media-object margincover" src="{{b[i]["cover"]}}"/>		  
+		</a>
+	      </center>
+	    </div>
+	    %end
+	  </div>
+	  <div class="row">
+	    %for i in range(9, 12):
+	    <div class="span2">
+	      <center>
+		<a href="/book/{{b[i]["isbn"]}}">
+		  <img class="media-object margincover" src="{{b[i]["cover"]}}"/>		  
+		</a>
+	      </center>
+	    </div>
+	    %end
+	  </div>
+	</div>
+      </div>
+      %end
     </div> <!-- /container -->
 
     <!-- Le javascript
