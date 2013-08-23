@@ -55,7 +55,6 @@
 	  <h2 class="media-heading">{{book.title}}</h2>
 	  <h4 class="media-heading">{{book.author}}</h4>
 	  %if book.category is not None:
-	  <br>
 	  <span class="label label-success">{{book.category}}</span>
 	  %end
 	  <br>
