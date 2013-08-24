@@ -23,6 +23,7 @@ import getData
 import requests
 import Book
 
+nltk.data.path.append('./nltk_data/')
 stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
 

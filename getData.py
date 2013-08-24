@@ -13,6 +13,7 @@ from gensim import corpora, models, similarities
 import logging
 import random
 
+nltk.data.path.append('./nltk_data/') 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', filename="log.txt", level=logging.INFO)
 stemmer = PorterStemmer()
 lemmatizer = WordNetLemmatizer()
