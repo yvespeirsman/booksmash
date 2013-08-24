@@ -45,48 +45,51 @@
       </div>
     </div>
 
-    <div class="row-fluid">
-      <div class="span6 offset3">
-	<!--<div class="span4">
-	<h1><img src="/static/img/BookIcon.png" width="60"/>  Stemming</h1>
-	</div>-->
-	<center>
-	<form><input class="btn btn-info" type="button" value="Back to search results" onClick="history.go(-1);return true;"></form>
-	</center>
-      </div>
-    <div class="well span6 offset3">
-      <div class="media-body">
-	<div class="pull-left">
-	  <img class="margincoverwide" src="{{book.cover}}">
-	</div>
-	<div>
-	  <h2 class="media-heading">{{book.title}}</h2>
-	  <h4 class="media-heading">{{book.author}}</h4>
-	  %if book.category is not None:
-	  <span class="label label-success">{{book.category}}</span>
-	  %end
+    <div class="container">
+      <div class="center">
+	<div class="margindiv">
 	  <br>
+	  <div class="row-fluid">
+	    <div class="span8">
+	      <div class="media-body">
+		<div class="pull-left">
+		  <img class="margincoverwide" src="{{book.cover}}">
+		</div>
+		<div>
+		  <h2 class="media-heading">{{book.title}}</h2>
+		  <h4 class="media-heading">{{book.author}}</h4>
+		  %if book.category is not None:
+		  <span class="label label-success">{{book.category}}</span>
+		  %end
+		  <br>
+		</div>
+	      </div>
+	    </div>
+	    <div class="span4">	
+	      <form><input class="btn btn-info" type="button" value="Back to search results" onClick="history.go(-1);return true;"></form>
+	    </div>
+	  </div>
+	  <div class="row-fluid">
+	      %for i in range(0,len(book.desc)):
+	      <p class="lead">{{book.desc[i]}}</p>
+	      %end
+              %for reviewer in book.reviews.keys():
+              <blockquote>
+		<p>{{book.reviews[reviewer]}}</p>
+		<small>{{reviewer}}</small>
+	      </blockquote>
+              %end
+	    </div>
+	  
 	</div>
       </div>
-      
-	<p class="lead">
-	  %for i in range(0,len(book.desc)):
-	  {{book.desc[i]}}<br><br>
-	  %end
-	</p>
-        %for reviewer in book.reviews.keys():
-           <blockquote>
-           <p>{{book.reviews[reviewer]}}</p>
-	   <small>{{reviewer}}</small>
-	   </blockquote>
-        %end
-    </div>
-    </center>
     </div>
     <!-- Le javascript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+      <script type="text/javascript" src="/static/jquery.backstretch.min.js"></script>
+    <script type="text/javascript" src="/static/test.js"></script>
    
 
 </body></html>

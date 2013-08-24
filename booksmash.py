@@ -97,9 +97,9 @@ def displayResults(username=""):
   tokens = tokenize(statuses)
   stems = stemList(tokens)
   
-  books = getData.getSimilarity(stems, 'LSI')
+  (topics, books) = getData.getSimilarity(stems, 'LSI')
 
-  t = bottle.template('templates/results.tpl',q=username,r=statuses,b=books)
+  t = bottle.template('templates/results.tpl',q=username,r=statuses,b=books,t=topics)
   return t
 
 @bottle.route('/book/<isbn>')
