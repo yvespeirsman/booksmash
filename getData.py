@@ -328,6 +328,14 @@ def model(documents):
         print sim, documents[f]["title"]
     """
 
+def findBestTopics(vec):
+    topicScores = []
+    for (topic, score) in vec:
+        topicScores.append((score, topic))
+    topicScores.sort()
+    topicScores.reverse()
+    return topicScores
+
 def getSimilarity(query_stems, method):
 
     idMap = {}
@@ -358,9 +366,10 @@ def getSimilarity(query_stems, method):
     index = similarities.MatrixSimilarity.load('model/books'+str(method)+'Index.index')
 
     query_bow = dictionary.doc2bow(query_stems)
-    #print query_bow
     query_vec = model[query_bow]
-    #print query_vec
+    bestTopics = findBestTopics(query_vec)
+    print bestTopics
+
     sims = index[query_vec]
     sims = sorted(enumerate(sims), key=lambda item: -item[1])
     #print "----------------"
@@ -374,7 +383,7 @@ def getSimilarity(query_stems, method):
         #print sim, title, author
         if len(title) > 2:
             results.append({"title":title, "author":author, "cover":cover,"isbn":isbn})
-    return results[:12]
+    return (bestTopics[:3],results[:12])
 
 def getImprints():
     d = {}

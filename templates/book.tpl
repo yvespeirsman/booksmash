@@ -46,6 +46,14 @@
     </div>
 
     <div class="row-fluid">
+      <div class="span6 offset3">
+	<!--<div class="span4">
+	<h1><img src="/static/img/BookIcon.png" width="60"/>  Stemming</h1>
+	</div>-->
+	<center>
+	<form><input class="btn btn-info" type="button" value="Back to search results" onClick="history.go(-1);return true;"></form>
+	</center>
+      </div>
     <div class="well span6 offset3">
       <div class="media-body">
 	<div class="pull-left">
