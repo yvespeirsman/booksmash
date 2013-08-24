@@ -98,6 +98,64 @@ def getBooks():
 parser = HTMLParser.HTMLParser()
 stemmer = PorterStemmer()
 
+def getContentFromImprintsWithStemming():
+    files = glob.glob("data/imprints/*.xml")
+    documents = {}
+    titlesDone = {}
+    t = 0 
+    done = 0
+    for f in files:
+        print f, t
+        try:
+            tree = ET.parse(f)
+        except:
+            continue
+        root = tree.getroot()
+
+        for product in root.iter('Product_Group'):
+            title = product.find('Products').find('Title').text
+            titleS = re.sub("\s[A-Z]+\s?$","",title)
+            titleS = re.sub("[Tt]he","",titleS)
+            titleS = re.sub(",","",titleS)
+            titleS = re.sub(" ", "", titleS)
+            titleS = titleS.strip().lower()
+            if titleS in titlesDone:
+                done = done+1
+                print titleS, "DONE", done
+            else:
+
+                titlesDone[titleS] = 1
+
+                isbn = product.find('Products').find('ISBN').text
+                author = product.find('Products').find('Author1').text
+                summary = product.find('Product_Group_SEO_Copy')
+                cover = product.find('Products').find("CoverImageURL_Medium").text
+                if summary is not None:
+                    summaryText = summary.text 
+                    if summaryText is not None and len(summaryText.split()) > 20:
+
+                        summaryTokens = []
+                        text = re.sub('<.*?>','',summaryText)
+                        text = parser.unescape(text)
+                        sentences = sent_tokenize(text)
+                        for sent in sentences:
+                            tokens = word_tokenize(sent)
+                            for token in tokens:
+                                if not stoplist.has_key(token.lower()) and len(token.lower()) > 2:
+                                    stem = stemmer.stem(token.lower())                                
+                                    summaryTokens.append(stem)
+                        t = t+1
+                        print t
+                        documents[t] = {}
+                        documents[t]["title"] = title
+                        documents[t]["isbn"] = isbn
+                        documents[t]["author"] = author
+                        documents[t]["fulltext"] = summaryTokens
+                        documents[t]["cover"] = cover
+    print "NUM:", len(documents.keys())
+
+    return documents
+
 def getContentFromImprints():
     files = glob.glob("data/imprints/*.xml")
     documents = {}
@@ -244,6 +302,7 @@ def model(documents):
     texts = []
     idMap = {}
 
+    """
     sums = {}
     i = open('summaries1.txt')
     for line in i:
@@ -257,7 +316,8 @@ def model(documents):
             st.append(word + '/' + tag[0])
         sums[isbn] = st
     i.close()
-    
+    """
+
     o = open('idMap.txt','w')
     t = 0
     for f in documents:
@@ -265,8 +325,9 @@ def model(documents):
         title = documents[f]["title"]
         isbn = documents[f]["isbn"]
 
-        texts.append(sums[isbn])
-        
+        #texts.append(sums[isbn])
+        texts.append(documents[f]["fulltext"])
+
         author = documents[f]["author"]
         cover = documents[f]["cover"]
         if cover is None:
@@ -303,7 +364,7 @@ def model(documents):
     print "LDA"
     print "----------------------------"
 
-    lda = models.ldamodel.LdaModel(corpus, id2word=dictionary, num_topics=100, passes=50)
+    lda = models.ldamodel.LdaModel(corpus, id2word=dictionary, num_topics=100, passes=25)
     corpus_lda = lda[corpus]
     lda.print_topics(100)
     lda.save('books.lda')
@@ -339,7 +400,7 @@ def findBestTopics(vec):
 def getSimilarity(query_stems, method):
 
     idMap = {}
-    i = open('idMap.txt','r')
+    i = open('model/idMap.txt','r')
     for line in i:
         line = line.strip().split("\t")
         id = int(line[0])
@@ -449,7 +510,7 @@ def readTopics():
 #query = "dark middle ages castle king queen dragon knight".split()
 #query_stems = stemList(query)
 #print query_stems
-#documents = getContentFromImprints()
+#documents = getContentFromImprintsWithStemming()
 #model(documents)
 #writeTopics()
 

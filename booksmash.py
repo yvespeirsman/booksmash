@@ -14,13 +14,17 @@ from cork import Cork
 import logging
 import os
 import twitter
+import nltk
+from nltk.corpus import wordnet
 from nltk.tokenize import word_tokenize
 from nltk.stem.porter import PorterStemmer
+from nltk.stem.wordnet import WordNetLemmatizer
 import getData
 import requests
 import Book
 
 stemmer = PorterStemmer()
+lemmatizer = WordNetLemmatizer()
 
 def tokenize(statuses):
   tokens = []
@@ -36,6 +40,21 @@ def stemList(tokens):
     stem = stemmer.stem(token.lower())
     stems.append(stem)
   return stems
+
+def lemmatize(tokens):
+  lemmas = []
+  tags = nltk.pos_tag(tokens)
+  for (token, tag) in tags:
+    if tag[0] == 'A':
+      lemma = lemmatizer.lemmatize(token,wordnet.ADJ)
+      lemmas.append(lemma.lower() + '/' + tag)
+    elif tag[0] == 'N':
+      lemma = lemmatizer.lemmatize(token,wordnet.NOUN)
+      lemmas.append(lemma.lower() + '/' + tag)
+    elif tag[0] == 'V':
+      lemma = lemmatizer.lemmatize(token,wordnet.VERB)
+      lemmas.append(lemma.lower() + '/' + tag)
+  return lemmas
 
 logging.basicConfig(format='localhost - - [%(asctime)s] %(message)s', level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -95,8 +114,9 @@ def displayResults(username=""):
   else:
     statuses = [username]
   tokens = tokenize(statuses)
-  stems = stemList(tokens)
-  
+  stems = lemmatize(tokens)
+  print stems
+
   (topics, books) = getData.getSimilarity(stems, 'LSI')
 
   t = bottle.template('templates/results.tpl',q=username,r=statuses,b=books,t=topics)
