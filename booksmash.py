@@ -16,12 +16,14 @@ import os
 import twitter
 import nltk
 from nltk.corpus import wordnet
-from nltk.tokenize import word_tokenize
+from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.stem.porter import PorterStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
 import getData
 import requests
 import Book
+
+method = "STEMS" # or lemmas
 
 nltk.data.path.append('./nltk_data/')
 stemmer = PorterStemmer()
@@ -30,9 +32,11 @@ lemmatizer = WordNetLemmatizer()
 def tokenize(statuses):
   tokens = []
   for status in statuses:
-    tokstatus = word_tokenize(status)
-    for token in tokstatus:
-      tokens.append(token)
+    sentences = sent_tokenize(status)
+    for sent in sentences:
+      toks = word_tokenize(sent)
+      for token in toks:
+        tokens.append(token)
   return tokens
 
 def stemList(tokens):
@@ -48,13 +52,13 @@ def lemmatize(tokens):
   for (token, tag) in tags:
     if tag[0] == 'A':
       lemma = lemmatizer.lemmatize(token,wordnet.ADJ)
-      lemmas.append(lemma.lower() + '/' + tag)
+      lemmas.append(lemma.lower() + '/' + tag[0])
     elif tag[0] == 'N':
       lemma = lemmatizer.lemmatize(token,wordnet.NOUN)
-      lemmas.append(lemma.lower() + '/' + tag)
+      lemmas.append(lemma.lower() + '/' + tag[0])
     elif tag[0] == 'V':
       lemma = lemmatizer.lemmatize(token,wordnet.VERB)
-      lemmas.append(lemma.lower() + '/' + tag)
+      lemmas.append(lemma.lower() + '/' + tag[0])
   return lemmas
 
 logging.basicConfig(format='localhost - - [%(asctime)s] %(message)s', level=logging.DEBUG)
@@ -115,12 +119,14 @@ def displayResults(username=""):
   else:
     statuses = [username]
   tokens = tokenize(statuses)
-  stems = lemmatize(tokens)
-  print stems
+  if method == "STEMS":
+    stems = stemList(tokens)
+  elif method == "LEMMAS":
+    stems = lemmatize(tokens)
 
   (topics, books) = getData.getSimilarity(stems, 'LSI')
 
-  t = bottle.template('templates/results.tpl',q=username,r=statuses,b=books,t=topics)
+  t = bottle.template('templates/results.tpl',q=username,r=statuses,b=books)
   return t
 
 @bottle.route('/book/<isbn>')

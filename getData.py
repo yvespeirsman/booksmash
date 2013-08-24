@@ -162,7 +162,7 @@ def getContentFromImprints():
     documents = {}
     titlesDone = {}
     t = 0
-    s = open('summaries.txt','w')
+    #s = open('summariesAll.txt','w')
     done = 0
     for f in files:
         print f, t
@@ -203,18 +203,18 @@ def getContentFromImprints():
                             tokens = word_tokenize(sent)
                             tags = nltk.pos_tag(tokens)
                             for (token,tag) in tags:
-                                if not stoplist.has_key(token.lower()) and len(token.lower()) > 2:
-                                    if tag[0] == 'A':
+                                #if not stoplist.has_key(token.lower()) and len(token.lower()) > 2:
+                                    if tag[0] == 'J':
                                         lemma = lemmatizer.lemmatize(token,wordnet.ADJ)
-                                        summaryTokens.append(lemma.lower() + '/' + tag)
                                     elif tag[0] == 'N':
                                         lemma = lemmatizer.lemmatize(token,wordnet.NOUN)
-                                        summaryTokens.append(lemma.lower() + '/' + tag)
                                     elif tag[0] == 'V':
                                         lemma = lemmatizer.lemmatize(token,wordnet.VERB)
                                         #stem = stemmer.stem(token.lower())                                
-                                        summaryTokens.append(lemma.lower() + '/' + tag)
-                        """
+                                    else:
+                                        lemma = lemmatizer.lemmatize(token)
+                                    summaryTokens.append(lemma.lower() + '/' + tag)
+                        """            
                         t = t+1
                         print t
                         documents[t] = {}
@@ -223,10 +223,10 @@ def getContentFromImprints():
                         documents[t]["author"] = author
                         documents[t]["fulltext"] = summaryTokens
                         documents[t]["cover"] = cover
-                        s.write(documents[t]["isbn"] + "\t" + " ".join(documents[t]["fulltext"]).encode('utf-8') + "\n")
+                        #s.write(documents[t]["isbn"] + "\t" + " ".join(documents[t]["fulltext"]).encode('utf-8') + "\n")
     print "NUM:", len(documents.keys())
 
-    s.close()
+    #s.close()
     return documents
 
 def getContent():
@@ -303,9 +303,8 @@ def model(documents):
     texts = []
     idMap = {}
 
-    """
     sums = {}
-    i = open('summaries1.txt')
+    i = open('summariesAll.txt')
     for line in i:
         line = line.strip().split('\t')
         isbn = line[0]
@@ -314,10 +313,11 @@ def model(documents):
         for token in s:
             word = token.split("/")[0]
             tag = token.split("/")[-1]
-            st.append(word + '/' + tag[0])
+            if not word in stoplist and len(word) > 3: 
+                if tag[0] in ['J','N','V']:
+                    st.append(word + '/' + tag[0])
         sums[isbn] = st
     i.close()
-    """
 
     o = open('idMap.txt','w')
     t = 0
@@ -326,8 +326,8 @@ def model(documents):
         title = documents[f]["title"]
         isbn = documents[f]["isbn"]
 
-        #texts.append(sums[isbn])
-        texts.append(documents[f]["fulltext"])
+        texts.append(sums[isbn])
+        #texts.append(documents[f]["fulltext"])
 
         author = documents[f]["author"]
         cover = documents[f]["cover"]
@@ -365,7 +365,7 @@ def model(documents):
     print "LDA"
     print "----------------------------"
 
-    lda = models.ldamodel.LdaModel(corpus, id2word=dictionary, num_topics=100, passes=25)
+    lda = models.ldamodel.LdaModel(corpus, id2word=dictionary, num_topics=100, passes=10)
     corpus_lda = lda[corpus]
     lda.print_topics(100)
     lda.save('books.lda')
@@ -398,8 +398,30 @@ def findBestTopics(vec):
     topicScores.reverse()
     return topicScores
 
-def getSimilarity(query_stems, method):
+topicNames = {}
+i = open('topics.csv')
+for line in i:
+    line = line.strip().split('\t')
+    t = line[0]
+    name = line[1]
+    topicNames[int(t)] = name
+i.close()            
 
+def resize(topics, num):
+    resizedTopics = []
+    for (val, topic) in topics[:num]:
+        val = val*100
+        val = val*2
+        if val > 100:
+            val = 100
+        if topicNames.has_key(topic):
+            resizedTopics.append((val, topicNames[topic]))
+        else:
+            resizedTopics.append((val, topic))
+    print resizedTopics
+    return resizedTopics
+
+def readIDMap():
     idMap = {}
     i = open('model/idMap.txt','r')
     for line in i:
@@ -416,12 +438,44 @@ def getSimilarity(query_stems, method):
         idMap[id]["cover"] = cover
         idMap[id]["isbn"] = isbn
     i.close()
+    return idMap
+
+
+def getSimilarityForTopic(topic):
+    idMap = readIDMap()
+    dictionary = corpora.Dictionary.load('model/books.dict')
+    model = models.LdaModel.load('model/books.lda')
+    index = similarities.MatrixSimilarity.load('model/booksLDAIndex.index')
+
+    query_vec = []
+    for x in range(0,100):
+        if x == topic:
+            query_vec.append((x,1))
+  
+    sims = index[query_vec]
+    sims = sorted(enumerate(sims), key=lambda item: -item[1])
+  
+    results = []
+    print sims[:5]
+    for (book, sim) in sims[:5]:
+        title = idMap[book]["title"]
+        author = idMap[book]["author"]
+        cover = idMap[book]["cover"]
+        isbn = idMap[book]["isbn"]
+        #print sim, title, author
+        if len(title) > 2:
+            results.append({"title":title, "author":author, "cover":cover,"isbn":isbn})
+    print results
+
+def getSimilarity(query_stems, method):
+
+    idMap = readIDMap()
 
     dictionary = corpora.Dictionary.load('model/books.dict')
     #corpus = corpora.MmCorpus('model/bookcorpus.mm')
     if method == "LSI":
         model = models.LsiModel.load('model/books.' + str(method).lower())
-        model.print_topics(100,num_words=100)
+        #model.print_topics(100,num_words=100)
     elif method == "LDA":
         model = models.LdaModel.load('model/books.' + str(method).lower())
         #model.print_topics(200,topn=100)
@@ -445,7 +499,9 @@ def getSimilarity(query_stems, method):
         #print sim, title, author
         if len(title) > 2:
             results.append({"title":title, "author":author, "cover":cover,"isbn":isbn})
-    return (bestTopics[:3],results[:12])
+
+    bestTopicsResized = resize(bestTopics,3)
+    return (bestTopicsResized,results[:12])
 
 def getImprints():
     d = {}
@@ -511,7 +567,7 @@ def readTopics():
 #query = "dark middle ages castle king queen dragon knight".split()
 #query_stems = stemList(query)
 #print query_stems
-#documents = getContentFromImprintsWithStemming()
+#documents = getContentFromImprints()
 #model(documents)
 #writeTopics()
 
