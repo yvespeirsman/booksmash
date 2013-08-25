@@ -2,7 +2,7 @@
 <!-- saved from url=(0065)http://twitter.github.io/bootstrap/examples/starter-template.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="utf-8">
-    <title>Stemming</title>
+    <title>ReadTweet</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
@@ -27,20 +27,19 @@
 
   <body style="">
 
-    <div class="navbar navbar-inverse navbar-fixed-top">
+    <div class="navbar navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container">
-          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="brand" href="/">Stemming</a>
-          <div class="nav-collapse collapse">
-            <ul class="nav">
-              <li><a href="/logout">Logout</a></li>
-            </ul>
-          </div>
+	  <div class="row-fluid">
+	    <div class="span1">
+              <a class="brand" href="/"><img width="20" src="/static/img/glyphicons_020_home.png" /></a>
+	    </div>
+	    <div class="span1 offset10">
+              <ul class="nav">
+		<li><a href="/logout">Logout</a></li>
+              </ul>
+	    </div>
+	  </div>
         </div>
       </div>
     </div>
@@ -50,7 +49,7 @@
 	<div class="margindiv">
 	  <br>
 	  <div class="row-fluid">
-	    <div class="span8">
+	    <div class="span10">
 	      <div class="media-body">
 		<div class="pull-left">
 		  <img class="margincoverwide" src="{{book.cover}}">
@@ -65,8 +64,8 @@
 		</div>
 	      </div>
 	    </div>
-	    <div class="span4">	
-	      <form><input class="btn btn-info" type="button" value="Back to search results" onClick="history.go(-1);return true;"></form>
+	    <div class="span2">	
+	      <form><input class="btn" type="button" value="Back to search results" onClick="history.go(-1);return true;"></form>
 	    </div>
 	  </div>
 	  <div class="row-fluid">

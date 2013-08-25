@@ -10,6 +10,10 @@
     margin-left:0px;
 }
 
+h1 {
+    color:blue
+}
+
 .center {
     background-color:rgba(255,255,255,0.85);
 }
@@ -17,6 +21,14 @@
 .margindiv{
     margin-left:50px;
     margin-right:50px;
+}
+
+.navbar {
+    .navbar-inner {
+	background-color:#013ADF;
+	background-image:none;
+	color:white;
+    }
 }
 
 .result {
