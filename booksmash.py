@@ -14,52 +14,10 @@ from cork import Cork
 import logging
 import os
 import twitter
-import nltk
-from nltk.corpus import wordnet
-from nltk.tokenize import word_tokenize, sent_tokenize
-from nltk.stem.porter import PorterStemmer
-from nltk.stem.wordnet import WordNetLemmatizer
-import getData
 import requests
 import Book
-
-method = "STEMS" # or lemmas
-
-nltk.data.path.append('./nltk_data/')
-stemmer = PorterStemmer()
-lemmatizer = WordNetLemmatizer()
-
-def tokenize(statuses):
-  tokens = []
-  for status in statuses:
-    sentences = sent_tokenize(status)
-    for sent in sentences:
-      toks = word_tokenize(sent)
-      for token in toks:
-        tokens.append(token)
-  return tokens
-
-def stemList(tokens):
-  stems = []
-  for token in tokens:
-    stem = stemmer.stem(token.lower())
-    stems.append(stem)
-  return stems
-
-def lemmatize(tokens):
-  lemmas = []
-  tags = nltk.pos_tag(tokens)
-  for (token, tag) in tags:
-    if tag[0] == 'A':
-      lemma = lemmatizer.lemmatize(token,wordnet.ADJ)
-      lemmas.append(lemma.lower() + '/' + tag[0])
-    elif tag[0] == 'N':
-      lemma = lemmatizer.lemmatize(token,wordnet.NOUN)
-      lemmas.append(lemma.lower() + '/' + tag[0])
-    elif tag[0] == 'V':
-      lemma = lemmatizer.lemmatize(token,wordnet.VERB)
-      lemmas.append(lemma.lower() + '/' + tag[0])
-  return lemmas
+import Text
+import Model
 
 logging.basicConfig(format='localhost - - [%(asctime)s] %(message)s', level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -79,6 +37,8 @@ session_opts = {
 }
 app = SessionMiddleware(app, session_opts)
 
+
+lsiModel = Model.Model('model/books')
 
 # #  Bottle methods  # #
 
@@ -109,7 +69,9 @@ def displayResults(username=""):
   if username=="":
     username = bottle.request.forms.query
   if len(username.split(" ")) == 1:
-    if not username[0] == "@":
+    if len(username) < 1:
+      username = "@"
+    elif not username[0] == "@":
       username = "@" + username
     try:
       statuses = api.GetUserTimeline(screen_name=username)
@@ -118,13 +80,16 @@ def displayResults(username=""):
       statuses = []
   else:
     statuses = [username]
-  tokens = tokenize(statuses)
-  if method == "STEMS":
-    stems = stemList(tokens)
-  elif method == "LEMMAS":
-    stems = lemmatize(tokens)
 
-  (topics, books) = getData.getSimilarity(stems, 'LSI')
+  allStems = []
+  for status in statuses:
+    statusText = Text.Text(status)
+    statusText.tokenize()
+    statusText.stem()
+    for stem in statusText.stems:
+        allStems.append(stem)
+
+  books = lsiModel.findSimilarDocuments(allStems,12)
 
   t = bottle.template('templates/results.tpl',q=username,r=statuses,b=books)
   return t

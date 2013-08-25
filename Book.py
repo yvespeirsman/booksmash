@@ -10,7 +10,12 @@ class Book():
         root = ET.fromstring(xml)
 
         self.title = root.find("Product_Detail").find("Title").text
-        self.author = root.find("Product_Detail").find("Product_Contributors").find("Product_Contributor").find("Display_Name").text
+        authors = []
+        contributors = root.find("Product_Detail").find("Product_Contributors").findall("Product_Contributor")
+        for contributor in contributors:
+            name = contributor.find('Display_Name')
+            authors.append(name.text)
+        self.author = ", ".join(authors)
         self.cover = root.find("Product_Detail").find("CoverImageURL_Medium").text
         self.isbn = root.find("Product_Detail").find("ISBN").text
         self.desc1 = root.find("Product_Detail").find("Product_Group_SEO_Copy").text
@@ -20,7 +25,6 @@ class Book():
         self.desc = self.desc1.split("\n")
         while self.desc[0] == '':
             self.desc = self.desc[1:]
-        print self.desc
 
         self.summary = None
         self.category = None

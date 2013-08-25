@@ -297,6 +297,51 @@ def filter(documents):
         documents[f]["fulltext-no-stop"] = textNoStop
     return documents
 
+def readBrown():
+    print "reading corpus"
+    files = glob.glob('/home/yves/Downloads/brown/c*')
+    texts = []
+    for f in files:
+        text = []
+        i = open(f)
+        for line in i:
+            line = line.strip().split()
+            if len(line) > 0:
+                for word in line:
+                    word = word.split('/')
+                    token = word[0].lower()
+                    tag = word[-1]
+                    if tag[0] in ['n','v','j'] and not tag[:2] == 'np':
+                        if not token in stoplist and len(token) > 3:
+                            stem = stemmer.stem(token)
+                            text.append(stem)
+        i.close()
+        texts.append(text)
+    print len(texts)
+    return texts
+
+def modelBrown():
+    texts = readBrown()
+
+    print "making dictionary"
+    dictionary = corpora.Dictionary(texts)
+    dictionary.save('brown.dict')
+
+    print "making corpus"
+    corpus = [dictionary.doc2bow(text) for text in texts]
+    corpora.MmCorpus.serialize('brown.mm', corpus) 
+
+    print "modelling corpus"
+    lda = models.ldamodel.LdaModel(corpus, id2word=dictionary, num_topics=100, passes=50)
+    corpus_lda = lda[corpus]
+    lda.print_topics(100, topn=50)
+    lda.save('brown.lda')
+
+    print "computing similarities"
+    indexLDA = similarities.MatrixSimilarity(lda[corpus])
+    indexLDA.save('brown.index')
+
+
 def model(documents):
 
     #documents = filter(documents)
@@ -538,8 +583,8 @@ def getLocales():
     print d.keys()
 
 def writeTopics():
-    model = models.LsiModel.load('books.lda')
-    model.print_topics(100,topn=100) #num_words
+    model = models.LsiModel.load('brown.lda')
+    model.print_topics(100,topn=50) #num_words
 
 def readTopics():
     i = open('log.txt')
@@ -575,3 +620,6 @@ def readTopics():
 #getSimilarity(query_stems)
 # todo: remove stopwords
 # todo: more authors
+
+#modelBrown()
+#writeTopics()
