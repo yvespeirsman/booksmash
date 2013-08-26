@@ -22,7 +22,6 @@
     <!--[if lt IE 9]>
       <script src="../assets/js/html5shiv.js"></script>
     <![endif]-->
-
   </head>
 
   <body style="">
@@ -65,6 +64,7 @@
 	  <div class="alert alert-error">
 	    <p>Sorry, we didn't find a Twitter user by that name</p>
 	  </div>
+	  <br/><br/>
 	  %else:
 	  <div class="row-fluid">
 	    <div class="span6">

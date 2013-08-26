@@ -27,12 +27,34 @@ def readTopics(f):
         topic = int(line[0])
         topicName = line[1]
         if len(topicName) > 1:
-            topics[topic] = str(topic) + " - " + topicName
+            #topics[topic] = str(topic) + " - " + topicName
+            topics[topic] = topicName
     i.close()
     return topics
 
+def aggregate(scores):
+    newScores = {}
+    for (score, topic) in scores[:10]:
+        topic = topic.split('(')[0].strip()
+        if newScores.has_key(topic):
+            newScores[topic] += score
+        else:
+            newScores[topic] = score
+    
+    scoreList = []
+    for topic in newScores:
+        scoreList.append((newScores[topic],topic))
+    scoreList.sort()
+    scoreList.reverse()
+    print scoreList
+    return scoreList
+
 def rescale(scores):
     newScores = []
+
+    print scores
+    scores = aggregate(scores)
+
     for (score, topic) in scores:
         score *= 200
         if score > 100:
@@ -83,4 +105,4 @@ class Model():
                 topicScores.append((score, self.topics[topic]))
         topicScores.sort()
         topicScores.reverse()
-        return rescale(topicScores[:3])
+        return rescale(topicScores[:num])

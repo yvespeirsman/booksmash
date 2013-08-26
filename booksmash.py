@@ -114,7 +114,6 @@ def displayResults(username=""):
 
   books = lsiModel.findSimilarDocuments(allStems,12)
   topics = ldaModel.getTopics(allStems,3)
-  print books
   print topics
 
   t = bottle.template('templates/results.tpl',q=username,r=statuses,b=books, t=topics)
