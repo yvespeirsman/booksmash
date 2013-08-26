@@ -12,6 +12,7 @@ from nltk.corpus import wordnet
 from gensim import corpora, models, similarities
 import logging
 import random
+import Text
 
 nltk.data.path.append('./nltk_data/') 
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', filename="log.txt", level=logging.INFO)
@@ -138,6 +139,7 @@ def getContentFromImprintsWithStemming():
                         summaryTokens = []
                         text = re.sub('<.*?>','',summaryText)
                         text = parser.unescape(text)
+                  
                         sentences = sent_tokenize(text)
                         for sent in sentences:
                             tokens = word_tokenize(sent)
@@ -252,33 +254,33 @@ def getContent():
             author = root.find("Product_Detail").find("Product_Contributors").find("Product_Contributor").find("Display_Name").text
             isbn = root.find("Product_Detail").find("ISBN").text
             cover = root.find("Product_Detail").find("CoverImageURL_Medium").text
-            if root.find('Imprint') != "Rayo" and not titlesDone.has_key(title):
-                titlesDone[title] = 1
-                for el in root.iter("Product_Content"):
-                    t = el.find('Content_Type_ID').text
-                    if t == "605": # 605 is summary
-                        text = el.find('Content_Area1').text
+            locale = root.find("Product_Detail").find('Locale_Desc')
+            if locale is not None:
+                localeText = locale.text
+                if localeText == "US Trade" and not titlesDone.has_key(title):
+                    titlesDone[title] = 1
+                    seo = root.find("Product_Detail").find('Product_Group_SEO_Copy')
+                    if seo is not None:
+                        text = seo.text 
                         if text:
                             text = re.sub('<.*?>','',text)
                             text = parser.unescape(text)
-                            #print title, "==", text
                             sentences = sent_tokenize(text)
                             for sent in sentences:
                                 tokens = word_tokenize(sent)
-                                #print sent
-                                #print tokens
+                                
                                 for token in tokens:
                                     if not stoplist.has_key(token.lower()) and len(token.lower()) > 2:
                                         stem = stemmer.stem(token.lower())
-                                        #print token, "-->", stem
                                         document.append(stem)
-            if len(document) > 20:
-                documents[f] = {}
-                documents[f]["title"] = title
-                documents[f]["isbn"] = isbn
-                documents[f]["author"] = author
-                documents[f]["fulltext"] = document
-                documents[f]["cover"] = cover
+
+                            if len(document) > 20:
+                                documents[f] = {}
+                                documents[f]["title"] = title
+                                documents[f]["isbn"] = isbn
+                                documents[f]["author"] = author
+                                documents[f]["fulltext"] = document
+                                documents[f]["cover"] = cover
     print "NUM:", len(documents.keys())
     return documents
 
@@ -320,9 +322,117 @@ def readBrown():
     print len(texts)
     return texts
 
-def modelBrown():
-    texts = readBrown()
+def readBookContent():
+    files = glob.glob('data/content/*.xml')
+    texts = []
+    for f in files:
+        print f
+        i = open(f)
+        text = ""
+        for line in i:
+            line = line.strip()                         
+            line = re.sub('<.*?>','',line)
+            line = parser.unescape(line)
+            try:
+                text = text + " " + line.decode('utf-8')
+            except:
+                continue
+        i.close()
+    
+        summaryTokens = []
+        sentences = sent_tokenize(text)
+        for sent in sentences:
+            tokens = word_tokenize(sent)
+            for token in tokens:
+                if not stoplist.has_key(token.lower()) and len(token.lower()) > 3:
+                    stem = stemmer.stem(token.lower())                                
+                    summaryTokens.append(stem)
+        if len(summaryTokens) > 20:
+            texts.append(summaryTokens)
+    i.close()
+    return texts
 
+def readWiki():
+    texts = []
+    i = open("/home/yves/Downloads/wiki.xml")
+    summaryTokens = []
+    t = 0
+    for line in i:
+        if line[:4] == '<doc':
+            t = t+1
+            print t, line
+            if len(summaryTokens) > 1:
+                texts.append(summaryTokens)
+            summaryTokens = []
+        else:
+            line = line.strip()                         
+            sentences = sent_tokenize(line)
+
+            for sent in sentences:
+                tokens = word_tokenize(sent)
+                for token in tokens:
+                    if not stoplist.has_key(token.lower()) and len(token.lower()) > 3:
+                        stem = stemmer.stem(token.lower())                                
+                        summaryTokens.append(stem)
+    i.close()
+    return texts
+
+def removeLowFreq(texts):
+    print "removing low frequencies"
+    freqs = {}
+    for text in texts:
+        for word in text:
+            if freqs.has_key(word):
+                freqs[word] = freqs[word] + 1
+            else:
+                freqs[word] = 1
+
+    newTexts = []
+    for text in texts:
+        newText = []
+        for word in text:
+            if freqs.has_key(word) and freqs[word] > 2:
+                newText.append(word)
+        newTexts.append(newText)
+    return newTexts
+
+
+def modelWiki():
+    texts = readWiki()
+    texts = removeLowFreq(texts)
+    print "making dictionary"
+
+    dictionary = corpora.Dictionary(texts)
+    dictionary.save('wiki.dict')
+
+    print "making corpus"
+    corpus = [dictionary.doc2bow(text) for text in texts]
+    corpora.MmCorpus.serialize('wiki.mm', corpus) 
+    
+    """
+    dictionary = corpora.Dictionary.load('wiki.dict')
+    corpus = corpora.MmCorpus('wiki.mm')
+    """
+
+    print "modelling corpus"
+    lda = models.ldamodel.LdaModel(corpus, id2word=dictionary, num_topics=100, passes=3)
+    corpus_lda = lda[corpus]
+    lda.print_topics(100, topn=50)
+    lda.save('wiki.lda')
+
+    print "computing similarities"
+    indexLDA = similarities.MatrixSimilarity(lda[corpus])
+    indexLDA.save('wiki.index')
+
+def modelBrown():
+    texts1 = readBrown()
+    texts2 = readBookContent()
+    print len(texts1)
+    print len(texts2)
+
+    texts = texts1 + texts2
+    print len(texts)
+    
     print "making dictionary"
     dictionary = corpora.Dictionary(texts)
     dictionary.save('brown.dict')
@@ -347,7 +457,7 @@ def model(documents):
     #documents = filter(documents)
     texts = []
     idMap = {}
-
+    """
     sums = {}
     i = open('summariesAll.txt')
     for line in i:
@@ -363,6 +473,7 @@ def model(documents):
                     st.append(word + '/' + tag[0])
         sums[isbn] = st
     i.close()
+    """
 
     o = open('idMap.txt','w')
     t = 0
@@ -371,8 +482,8 @@ def model(documents):
         title = documents[f]["title"]
         isbn = documents[f]["isbn"]
 
-        texts.append(sums[isbn])
-        #texts.append(documents[f]["fulltext"])
+        #texts.append(sums[isbn])
+        texts.append(documents[f]["fulltext"])
 
         author = documents[f]["author"]
         cover = documents[f]["cover"]
@@ -393,36 +504,37 @@ def model(documents):
     corpus = [dictionary.doc2bow(text) for text in texts]
     corpora.MmCorpus.serialize('bookcorpus.mm', corpus) 
 
-    #tfidf = models.TfidfModel(corpus)
-    #corpus_tfidf = tfidf[corpus]
+    tfidf = models.TfidfModel(corpus)
+    corpus_tfidf = tfidf[corpus]
     
 
     print "----------------------------"
     print "LSA"
     print "----------------------------"
 
-    #lsi = models.LsiModel(corpus_tfidf, id2word=dictionary,num_topics=100)
-    #corpus_lsi = lsi[corpus_tfidf]
-    #lsi.save('books.lsi')
-    #lsi.print_topics(100)
+    lsi = models.LsiModel(corpus_tfidf, id2word=dictionary,num_topics=100)
+    corpus_lsi = lsi[corpus_tfidf]
+    lsi.save('books.lsi')
+    lsi.print_topics(100)
+    indexLSI = similarities.MatrixSimilarity(lsi[corpus])
+    indexLSI.save('booksLSIIndex.index')
 
+    """
     print "----------------------------"
     print "LDA"
     print "----------------------------"
 
-    lda = models.ldamodel.LdaModel(corpus, id2word=dictionary, num_topics=100, passes=10)
+    lda = models.ldamodel.LdaModel(corpus, id2word=dictionary, num_topics=100, passes=50)
     corpus_lda = lda[corpus]
     lda.print_topics(100)
     lda.save('books.lda')
 
 
-    #indexLSI = similarities.MatrixSimilarity(lsi[corpus])
-    #indexLSI.save('booksLSIIndex.index')
     indexLDA = similarities.MatrixSimilarity(lda[corpus])
     indexLDA.save('booksLDAIndex.index')
 
     #index = similarities.MatrixSimilarity.load('test.index')
-    """
+
     #print query_stems
     query_bow = dictionary.doc2bow(query_stems)
     print query_bow
@@ -599,14 +711,63 @@ def readTopics():
         print "\n"
     i.close()
 
+def getBookContent():
+
+    done = {}
+    fs = glob.glob('data/books/*')
+    for f in fs:
+        isbn = f.split('-')[1]
+        isbn = isbn.split('.')[0]
+        done[isbn] = 1 
+
+    isbns = []
+    i = open('model/books.ids')
+    for line in i:
+        line = line.strip().split('\t')
+        isbn = line[3]
+        if not isbn in done:
+            isbns.append(isbn)
+        else:
+            print "isbn", isbn, "done"
+    i.close()
+
+    random.shuffle(isbns)
+    for isbn in isbns[:4000]:
+
+        uri = "http://api.harpercollins.com/api/v3/hcapim?apiname=HC_Text&format=XML&isbn="+isbn+"&apikey=6wbqgghpzmxhmtf5dmykv2bj"
+        oFile = "data/content/" + isbn + ".xml"
+        if not os.path.exists(oFile):
+            print isbn
+            os.system('curl "' + uri + '" > ' + oFile)
+
+
 #readTopics()
 
 #getLocales()
 #getImprints()
 #getAuthors()
 #getBooks()
-#getContentFromImprints()
+"""
+b = getContent()
+a = getContentFromImprintsWithStemming()
 
+ab = {}
+t = 0
+isbns = {}
+for key in a:
+    ab[t] = a[key]
+    t = t+1
+
+for key in b:
+    isbn = b[key]["isbn"]
+    if not isbn in isbns:
+        isbns[isbn] = 1
+        t = t+1
+        ab[t] = b[key]
+
+print len(ab.keys()), "documents"
+model(ab)
+"""
 #query = "trade economy finance currency money international market".split()
 #query = "cancer illness hospital ill critical drugs medecine".split()
 #query = "dark middle ages castle king queen dragon knight".split()
@@ -621,5 +782,8 @@ def readTopics():
 # todo: remove stopwords
 # todo: more authors
 
-#modelBrown()
+#readBookContent()
+modelWiki()
 #writeTopics()
+#getBookContent()
+

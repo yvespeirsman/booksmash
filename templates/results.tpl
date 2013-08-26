@@ -68,20 +68,22 @@
 	  %else:
 	  <div class="row-fluid">
 	    <div class="span6">
-	      <!--
 	      <ul class="breadcrumb">
 		<li>Tweet analysis for {{q}}</li>
 	      </ul>
+	      %for x in range(0, len(t)):
 	      <div class="row-fluid">
 		<div class="span3 offset1">
+		  {{t[x][1]}}
 		</div>
 		<div class="span6">
 		  <div class="progress progress-info">
+		     <div class="bar" style="width: {{t[x][0]}}%;"></div>
 		  </div>
 		</div>
 	      </div>
-	      -->
-	      
+	      %end
+
 	      <ul class="breadcrumb">
 		<li>{{len(r)}} most recent tweets for {{q}}</li>
 	      </ul>

@@ -13,7 +13,6 @@ class Text():
     def __init__(self,string):
         self.string = string
 
-
     def tokenize(self):
         self.tokens = []
         sentences = sent_tokenize(self.string)

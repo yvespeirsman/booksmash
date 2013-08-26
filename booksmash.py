@@ -39,6 +39,7 @@ app = SessionMiddleware(app, session_opts)
 
 
 lsiModel = Model.Model('model/books')
+ldaModel = Model.Model('wiki-min2/wiki')
 
 # #  Bottle methods  # #
 
@@ -90,8 +91,11 @@ def displayResults(username=""):
         allStems.append(stem)
 
   books = lsiModel.findSimilarDocuments(allStems,12)
+  topics = ldaModel.getTopics(allStems,3)
+  print books
+  print topics
 
-  t = bottle.template('templates/results.tpl',q=username,r=statuses,b=books)
+  t = bottle.template('templates/results.tpl',q=username,r=statuses,b=books, t=topics)
   return t
 
 @bottle.route('/book/<isbn>')
