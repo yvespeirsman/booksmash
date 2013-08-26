@@ -63,7 +63,18 @@
 	    <br><br>
 	    Or let these people inspire you:<br><br>
 	    <div class="row-fluid">
-	      <div class="span3 offset3">
+	      <div class="span4 offset2">
+		<p align="left"><img src="/static/img/{{accounts[0][1]}}" />  <a href="search/{{accounts[0][2]}}">{{accounts[0][0]}}</a></p>
+		<p align="left"><img src="/static/img/{{accounts[1][1]}}" />  <a href="search/{{accounts[1][2]}}">{{accounts[1][0]}}</a></p>
+		<p align="left"><img src="/static/img/{{accounts[2][1]}}" />  <a href="search/{{accounts[2][2]}}">{{accounts[2][0]}}</a></p>
+	      </div>
+	      <div class="span4 offset2">
+		<p align="left"><img src="/static/img/{{accounts[3][1]}}" />  <a href="search/{{accounts[3][2]}}">{{accounts[3][0]}}</a></p>
+		<p align="left"><img src="/static/img/{{accounts[4][1]}}" />  <a href="search/{{accounts[4][2]}}">{{accounts[4][0]}}</a></p>
+		<p align="left"><img src="/static/img/{{accounts[5][1]}}" />  <a href="search/{{accounts[5][2]}}">{{accounts[5][0]}}</a></p>
+	      </div>
+
+	      <!--<div class="span3 offset3">
 		<p align="left"><img src="/static/img/BarackObama.jpg" />  <a href="search/BarackObama">Barack Obama</a></p>
 		<p align="left"><img src="/static/img/Pontifex.jpg" />  <a href="search/Pontifex">Pope Francis I</a></p>
 		<p align="left"><img src="/static/img/Cristiano.jpg" />  <a href="search/Cristiano">Cristiano Ronaldo</a></p>
@@ -72,7 +83,7 @@
 		<p align="left"><img src="/static/img/PerezHilton.jpg" />  <a href="search/PerezHilton">Perez Hilton</a></p>
 		<p align="left"><img src="/static/img/AmericanCancer.jpg" />  <a href="search/AmericanCancer">American Cancer Society</a></p>
 		<p align="left"><img src="/static/img/AlGore.jpg" />  <a href="search/AlGore">Al Gore</a></p>
-	      </div>
+	      </div>-->
 	    </div>
 	    <br><br><br>
 	  </center>

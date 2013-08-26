@@ -15,9 +15,31 @@ import logging
 import os
 import twitter
 import requests
+import random
 import Book
 import Text
 import Model
+
+twitterAccounts = [
+    ("Barack Obama", "BarackObama.jpg", "BarackObama"),
+    ("Pope Francis I", "Pontifex.jpg", "Pontifex"),
+    ("Cristiano Ronaldo", "Cristiano.jpg", "Cristiano"),
+    ("Perez Hilton", "PerezHilton.jpg", "PerezHilton"),
+    ("Al Gore", "AlGore.jpg", "AlGore"),
+    ("American Cancer Society", "AmericanCancer.jpg", "AmericanCancer"),
+    ("Huffington Post Crime", "HuffPostCrime.png", "HuffPostCrime"),
+    ("Nancy Pelosi", "NancyPelosi.jpg", "NancyPelosi"),
+    ("Joseph E. Stiglitz", "JoeStiglitz.jpg", "JoeStiglitz"),
+    ("Logan Morrison", "LoMoMarlins.jpg", "LoMoMarlins"),
+    ("Bill Gates","BillGates.jpg", "BillGates"),
+    ("Health Magazine","GoodHealth.jpg", "GoodHealth"),
+    ("Ellen DeGeneres","TheEllenShow.jpg", "TheEllenShow"),
+    ("Bill Nye","TheScienceGuy.jpg", "TheScienceGuy"),
+    ("ESPN","ESPN.jpg", "ESPN"),
+    ("Psychology Today", "PsychToday.jpg", "PsychToday"),
+    ("WWF", "WWF.png", "WWF"),
+    ("Elle Magazine","ElleMagazine.png", "ElleMagazine")
+]
 
 logging.basicConfig(format='localhost - - [%(asctime)s] %(message)s', level=logging.DEBUG)
 log = logging.getLogger(__name__)
@@ -131,7 +153,8 @@ def logout():
 def index():
     """Only authenticated users can see this"""
     aaa.require(fail_redirect='/login')
-    return bottle.template('templates/index.tpl')
+    random.shuffle(twitterAccounts)
+    return bottle.template('templates/index.tpl', accounts=twitterAccounts[:6])
 
     #return 'Welcome! <a href="/admin">Admin page</a> <a href="/logout">Logout</a>'
 
