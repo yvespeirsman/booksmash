@@ -56,7 +56,6 @@ def rescale(scores):
     print scores
     scores = aggregate(scores)
 
-<<<<<<< HEAD
     total = 0
     for (score, topic) in scores:
         total += score
@@ -76,15 +75,6 @@ def removeDoubles(results):
             newResults.append(x)
             done[wordsInTitle] = 1
     return newResults
-=======
-    for (score, topic) in scores:
-        score *= 200
-        if score > 100:
-            score = 100
-        newScores.append((score, topic))
-    return newScores
-    
->>>>>>> e8615328b1690fd306c4cb06bf2ac0514e417c64
 
 class Model():
 
