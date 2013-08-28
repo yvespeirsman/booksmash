@@ -1,4 +1,5 @@
 import os
+import re
 from gensim import corpora, models, similarities
 
 def readIDMap(f):
@@ -55,13 +56,25 @@ def rescale(scores):
     print scores
     scores = aggregate(scores)
 
+    total = 0
     for (score, topic) in scores:
-        score *= 200
-        if score > 100:
-            score = 100
-        newScores.append((score, topic))
+        total += score
+
+    for (score, topic) in scores:
+        newScores.append((score/float(total)*100, topic))
     return newScores
-    
+
+def removeDoubles(results):
+    newResults = []
+    done = {}
+    for x in results:
+        title = x["title"]
+        wordsInTitle = re.findall('\w{4,}',title)
+        wordsInTitle = "".join(wordsInTitle)
+        if not done.has_key(wordsInTitle):
+            newResults.append(x)
+            done[wordsInTitle] = 1
+    return newResults
 
 class Model():
 
@@ -92,7 +105,7 @@ class Model():
             isbn = self.ids[book]["isbn"]
             if len(title) > 2:
                 results.append({"title":title, "author":author, "cover":cover,"isbn":isbn})
-      
+        results = removeDoubles(results)
         return results[:num]
 
     def getTopics(self, query, num):
