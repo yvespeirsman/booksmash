@@ -21,7 +21,7 @@ import Text
 import Model
 
 twitterAccounts = [
-#    ("Barack Obama", "BarackObama.jpg", "BarackObama"),
+    ("Barack Obama", "BarackObama.jpg", "BarackObama"),
     ("Pope Francis I", "Pontifex.jpg", "Pontifex"),
     ("Cristiano Ronaldo", "Cristiano.jpg", "Cristiano"),
     ("Perez Hilton", "PerezHilton.jpg", "PerezHilton"),
