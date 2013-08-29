@@ -22,7 +22,7 @@
     <!--[if lt IE 9]>
       <script src="../assets/js/html5shiv.js"></script>
     <![endif]-->
-
+    <link rel="shortcut icon" href="/static/img/favicon.ico" >
   </head>
 
   <body style="">
@@ -34,8 +34,9 @@
 	    <div class="span1">
               <a class="brand" href="/"><img width="20" src="/static/img/glyphicons_020_home.png" /></a>
 	    </div>
-	    <div class="span1 offset10">
+	    <div class="span2 offset9">
               <ul class="nav">
+		<li><a href="/about">About</a></li>
 		<li><a href="/logout">Logout</a></li>
               </ul>
 	    </div>
@@ -53,7 +54,7 @@
 	    <h1><img src="/static/img/BookIcon.png" width="60"/>  ReadTweet</h1>
 	    <h3>Great minds read alike.</h3>
 	    <br><br><br>
-	    Enter a Twitter user name or a list of search terms.
+	    Enter a Twitter user or a list of search terms.
 	    <br><br>
 	    <form action="/search"  method="post">
 	      <input type="text" class="input-large search-query" name="query"/>

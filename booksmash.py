@@ -21,7 +21,7 @@ import Text
 import Model
 
 twitterAccounts = [
-    ("Barack Obama", "BarackObama.jpg", "BarackObama"),
+#    ("Barack Obama", "BarackObama.jpg", "BarackObama"),
     ("Pope Francis I", "Pontifex.jpg", "Pontifex"),
     ("Cristiano Ronaldo", "Cristiano.jpg", "Cristiano"),
     ("Perez Hilton", "PerezHilton.jpg", "PerezHilton"),
@@ -127,6 +127,10 @@ def displayBook(isbn):
   b = Book.Book(r.text)
   t = bottle.template('templates/book.tpl',book=b)
   return t
+
+@bottle.route('/about')
+def about():
+    return bottle.template('templates/about.tpl')
 
 @bottle.post('/login')
 def login():

@@ -22,7 +22,7 @@
     <!--[if lt IE 9]>
       <script src="../assets/js/html5shiv.js"></script>
     <![endif]-->
-
+    <link rel="shortcut icon" href="/static/img/favicon.ico" >
   </head>
 
   <body style="">
@@ -34,8 +34,9 @@
 	    <div class="span1">
               <a class="brand" href="/"><img width="20" src="/static/img/glyphicons_020_home.png" /></a>
 	    </div>
-	    <div class="span1 offset10">
+	    <div class="span2 offset9">
               <ul class="nav">
+		<li><a href="/about">About</a></li>
 		<li><a href="/logout">Logout</a></li>
               </ul>
 	    </div>
@@ -58,6 +59,7 @@
 		  <h2 class="media-heading">{{book.title}}</h2>
 		  <h4 class="media-heading">{{book.author}}</h4>
 		  %if book.category is not None:
+		  <br>
 		  <span class="label label-success">{{book.category}}</span>
 		  %end
 		  <br>
